@@ -334,6 +334,7 @@ export default function App() {
           contentContainerStyle={s.settings}
           keyboardShouldPersistTaps="handled"
         >
+          <View style={s.glassCard}>
           <Text style={s.heroTitle}>连接你的内容服务</Text>
           <Text style={s.description}>
             电视和运行服务的电脑 / NAS 连接同一网络，填入服务启动后显示的地址。
@@ -397,6 +398,7 @@ export default function App() {
             公开样片。此测试不代表红果内容可用。{"\n"}
             收藏和观看记录仅保存在当前设备。{"\n"}本应用为个人非官方客户端。
           </Text>
+          </View>
         </ScrollView>
       ) : (
         <>
@@ -490,37 +492,46 @@ const s = StyleSheet.create({
   header: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 20,
-    marginBottom: 12,
+    gap: 28,
+    marginBottom: 16,
+    paddingTop: 4,
   },
-  brand: { color: palette.accent, fontSize: 23, fontWeight: "800" },
-  nav: { flexDirection: "row", gap: 8, flex: 1 },
-  muted: { color: palette.muted, fontSize: 15 },
+  brand: { color: palette.accent, fontSize: 30, fontWeight: "800", letterSpacing: 1 },
+  nav: { flexDirection: "row", gap: 14, flex: 1 },
+  muted: { color: palette.muted, fontSize: 16 },
   heading: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    minHeight: 48,
-    marginBottom: 8,
-    paddingHorizontal: 6,
+    minHeight: 60,
+    marginBottom: 10,
+    paddingHorizontal: 10,
   },
-  section: { color: palette.text, fontSize: 21, fontWeight: "700" },
-  heroTitle: { color: palette.text, fontSize: 26, fontWeight: "700" },
-  description: { color: palette.muted, fontSize: 17, lineHeight: 25 },
-  settings: { padding: 6, gap: 12, paddingBottom: 24 },
-  label: { color: palette.text, fontSize: 17 },
+  section: { color: palette.text, fontSize: 30, fontWeight: "700" },
+  heroTitle: { color: palette.text, fontSize: 30, fontWeight: "700" },
+  description: { color: palette.muted, fontSize: 18, lineHeight: 27 },
+  settings: { padding: 8, gap: 16, paddingBottom: 28 },
+  glassCard: {
+    backgroundColor: palette.glass,
+    borderWidth: 1,
+    borderColor: palette.glassBorder,
+    borderRadius: 22,
+    padding: 22,
+    gap: 12,
+  },
+  label: { color: palette.text, fontSize: 18, fontWeight: "600" },
   input: {
     color: palette.text,
-    fontSize: 18,
-    borderWidth: 2,
-    borderColor: palette.border,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    backgroundColor: palette.panel,
+    fontSize: 19,
+    borderWidth: 1,
+    borderColor: palette.glassBorder,
+    borderRadius: 16,
+    paddingHorizontal: 18,
+    paddingVertical: 13,
+    backgroundColor: palette.glassStrong,
   },
-  row: { flexDirection: "row", gap: 12, flexWrap: "wrap" },
-  search: { flexDirection: "row", gap: 12, marginBottom: 12 },
-  feedback: { color: palette.accent, fontSize: 17 },
-  note: { color: palette.muted, fontSize: 15, lineHeight: 24, marginTop: 8 },
+  row: { flexDirection: "row", gap: 14, flexWrap: "wrap" },
+  search: { flexDirection: "row", gap: 14, marginBottom: 14, paddingHorizontal: 10 },
+  feedback: { color: palette.accent, fontSize: 18 },
+  note: { color: palette.muted, fontSize: 16, lineHeight: 26, marginTop: 10 },
 });

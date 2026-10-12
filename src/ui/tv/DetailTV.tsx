@@ -80,7 +80,7 @@ export function DetailTV({
         }}
       >
         <Text style={s.section}>选集 · {detail.episodes.length} 集</Text>
-        <TVFocusGuideView trapFocusLeft trapFocusRight style={s.row}>
+        <TVFocusGuideView trapFocusLeft trapFocusRight style={[s.row, { paddingHorizontal: 10 }]}>
           {Array.from(
             { length: Math.ceil(detail.episodes.length / EPISODE_GROUP_SIZE) },
             (_, i) => (
@@ -102,14 +102,14 @@ export function DetailTV({
             )
           )}
         </TVFocusGuideView>
-        <TVFocusGuideView autoFocus style={[s.row, { marginTop: 12 }]}>
+        <TVFocusGuideView autoFocus style={[s.row, { marginTop: 16, paddingHorizontal: 10 }]}>
           {detail.episodes
             .slice(group * EPISODE_GROUP_SIZE, (group + 1) * EPISODE_GROUP_SIZE)
             .map((e, i) => (
               <Button
                 key={e.id}
                 label={String(e.number)}
-                style={{ width: 72 }}
+                style={{ width: 98 }}
                 primary={progress?.episodeId === e.id}
                 preferred={restoreEpisode === e.id}
                 onPress={() => onPlay(group * EPISODE_GROUP_SIZE + i, 0)}
@@ -127,21 +127,21 @@ export function DetailTV({
   );
 }
 const s = StyleSheet.create({
-  hero: { flexDirection: "row", gap: 24, marginBottom: 18 },
-  cover: { width: 130, height: 176, borderRadius: 10 },
+  hero: { flexDirection: "row", gap: 30, marginBottom: 24, paddingHorizontal: 10 },
+  cover: { width: 160, height: 224, borderRadius: 16 },
   title: {
-    fontSize: 28,
-    lineHeight: 35,
+    fontSize: 34,
+    lineHeight: 42,
     fontWeight: "700",
     color: palette.text,
   },
-  muted: { fontSize: 15, color: palette.muted },
-  description: { fontSize: 17, lineHeight: 24, color: palette.muted },
-  row: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
+  muted: { fontSize: 17, color: palette.muted },
+  description: { fontSize: 19, lineHeight: 28, color: palette.muted },
+  row: { flexDirection: "row", flexWrap: "wrap", gap: 14 },
   section: {
-    fontSize: 20,
-    fontWeight: "600",
+    fontSize: 26,
+    fontWeight: "700",
     color: palette.text,
-    marginBottom: 10,
+    marginBottom: 14,
   },
 });

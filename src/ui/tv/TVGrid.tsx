@@ -46,9 +46,10 @@ export const TVGrid = forwardRef<
   const { fontScale } = useWindowDimensions();
   const cols = Math.max(2, Math.min(5, Math.floor(width / 160)));
   const cardWidth = width / cols - 12;
-  const coverHeight = Math.round((cardWidth - 14) * 1.05);
-  const titleHeight = Math.ceil(48 * fontScale);
-  const rowHeight = coverHeight + titleHeight + 36;
+  // tvOS 海报卡：竖版 2:3 观感
+  const coverHeight = Math.round((cardWidth - 14) * 1.42);
+  const titleHeight = Math.ceil(56 * fontScale);
+  const rowHeight = coverHeight + titleHeight + 42;
   const [viewport, setViewport] = useState(rowHeight);
   const list = useRef<FlatList<Series>>(null);
   const initial = useRef(
