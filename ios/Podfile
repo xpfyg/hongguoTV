@@ -5,6 +5,8 @@ require Pod::Executable.execute_command('node', ['-p',
     {paths: [process.argv[1]]},
   )', __dir__]).strip
 
+require 'json'
+
 platform :tvos, min_ios_version_supported
 prepare_react_native_project!
 
@@ -31,5 +33,90 @@ target 'HongguoTV' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+
+    # --- Hermes framework per-configuration swap ---------------------------------
+    # RN ships two Hermes prebuilt tarballs with different ABIs:
+    #   * -debug   : built with the JS debugger (HERMES_ENABLE_DEBUGGER) and the
+    #                CDP/inspector symbols (CDPHandler::registerCallbacks ...).
+    #   * -release : built without them.
+    # RN's C++ pods compile HermesInstance.cpp with HERMES_ENABLE_DEBUGGER=1 in
+    # Debug and without it in Release. Linking the wrong framework causes either
+    # a Debug link error (undefined CDPHandler::registerCallbacks) or a Release
+    # launch crash (vtable slot mismatch -> SIGSEGV at 0x17). This build phase
+    # swaps the framework inside the hermes-engine pod to match the configuration
+    # being built. The two tarballs must exist under $PODS_ROOT/hermes-engine-artifacts/
+    # (download them once; see docs/TVOS.md).
+    rn_core_version = begin
+      rn_pkg = Pod::Executable.execute_command(
+        'node', ['-p', 'require.resolve("react-native/package.json",{paths:[process.argv[1]]})', __dir__]
+      ).strip
+      JSON.parse(File.read(rn_pkg))['version'].sub(/-\d+$/, '')
+    rescue
+      '0.81.5'
+    end
+
+    hermes_target = installer.pods_project.targets.find { |t| t.name == 'hermes-engine' }
+    if hermes_target
+      swap_phase_name = '[Hermes] Swap framework per configuration'
+      phase = hermes_target.shell_script_build_phases.find { |p| p.name == swap_phase_name }
+      if phase.nil?
+        phase = hermes_target.new_shell_script_build_phase(swap_phase_name)
+      end
+      phase.shell_script = <<~EOS
+          set -euo pipefail
+          if echo "$GCC_PREPROCESSOR_DEFINITIONS" | grep -q "DEBUG=1"; then
+            EXPECT=debug
+          else
+            EXPECT=release
+          fi
+          ARTIFACTS="$PODS_ROOT/hermes-engine-artifacts"
+          FW="$PODS_ROOT/hermes-engine/destroot/Library/Frameworks/universal/hermes.xcframework"
+          BIN="$FW/tvos-arm64_x86_64-simulator/hermes.framework/hermes"
+          HAS_DEBUGGER=0
+          if [ -f "$BIN" ] && command -v nm >/dev/null 2>&1; then
+            HAS_DEBUGGER=$(nm "$BIN" 2>/dev/null | grep -c CDPHandler || true)
+          fi
+          NEEDS_SWAP=1
+          if [ "$EXPECT" = debug ] && [ "$HAS_DEBUGGER" -gt 0 ]; then
+            echo "[Hermes] framework already matches Debug build (debugger enabled); no swap needed"
+            NEEDS_SWAP=0
+          fi
+          if [ "$EXPECT" = release ] && [ "$HAS_DEBUGGER" -eq 0 ]; then
+            echo "[Hermes] framework already matches Release build (no debugger); no swap needed"
+            NEEDS_SWAP=0
+          fi
+          if [ "$NEEDS_SWAP" -eq 1 ]; then
+            TARBALL="$ARTIFACTS/hermes-ios-#{rn_core_version}-${EXPECT}.tar.gz"
+            if [ ! -f "$TARBALL" ]; then
+              echo "error: $TARBALL not found; download the matching Hermes tarball (see docs/TVOS.md)" >&2
+              exit 1
+            fi
+            echo "[Hermes] swapping hermes.xcframework to $EXPECT build ($TARBALL)"
+            TMP="$ARTIFACTS/.swap-$$"
+            rm -rf "$TMP"
+            mkdir -p "$TMP"
+            tar -xzf "$TARBALL" -C "$TMP"
+            cp -R "$TMP/destroot/Library/Frameworks/universal/hermes.xcframework/." "$FW/"
+            rm -rf "$TMP"
+          fi
+          # Always refresh the linker's XCFrameworkIntermediates copy. CocoaPods sorts
+          # script phases alphabetically, so "[CP] Copy XCFrameworks" may run before
+          # this phase; updating the intermediates copy directly makes the result
+          # independent of phase order and of whether a swap happened.
+          case "$PLATFORM_NAME" in
+            appletvsimulator) SLICE="tvos-arm64_x86_64-simulator" ;;
+            appletvos) SLICE="tvos-arm64" ;;
+            *) SLICE="tvos-arm64_x86_64-simulator" ;;
+          esac
+          INTER="$PODS_XCFRAMEWORKS_BUILD_DIR/hermes-engine/Pre-built"
+          if [ -d "$INTER" ]; then
+            echo "[Hermes] refreshing intermediates copy ($INTER) from $SLICE"
+            rsync -a --delete "$FW/$SLICE/" "$INTER/" 2>/dev/null || cp -R "$FW/$SLICE/." "$INTER/"
+          else
+            echo "[Hermes] intermediates copy not present yet: $INTER (the [CP] phase will copy it from the swapped framework)"
+          fi
+          echo "[Hermes] phase done"
+        EOS
+    end
   end
 end

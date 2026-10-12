@@ -22,7 +22,7 @@
 - 本地收藏、最近观看、断点续播。
 - 服务地址 / 可选访问口令设置，连接检测及播放失败重试。
 
-v0.1.1 改善 TV 焦点滚动、返回恢复、遥控器播放按键、安全边距与选集分组，见 [本版交付说明](docs/RELEASE_0.1.1.md)。Android 8.0 的最低版本配置不等于目标电视已经验收；Apple TV 工程骨架保留，移动端和 Web 还未交付。
+v0.1.1 改善 TV 焦点滚动、返回恢复、遥控器播放按键、安全边距与选集分组，见 [本版交付说明](docs/RELEASE_0.1.1.md)。Android 8.0 的最低版本配置不等于目标电视已经验收；**Apple TV 版构建链路已补齐并产出 tvOS 模拟器 Release 产物**（真机需付费开发者账号），见 [tvOS 构建与安装](docs/TVOS.md)；移动端和 Web 还未交付。
 
 ## 在电视上使用
 
@@ -87,6 +87,7 @@ npm run build:android
 - [首版交付与验收](docs/FIRST_RELEASE.md)
 - [Docker 部署](docs/DOCKER.md)
 - [项目状态](docs/PROJECT_STATUS.md)
+- [tvOS（Apple TV）构建与安装](docs/TVOS.md)
 - [React Native 与多平台架构](docs/ARCHITECTURE.md)
 - [接口研究](docs/research/2026-09-21-hongguo-open-source.md)
 

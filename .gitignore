@@ -36,3 +36,7 @@ keystore.properties
 .externalNativeBuild/
 /ios/Pods/
 /ios/build/
+
+# iOS: local machine overrides and per-user Xcode state
+ios/.xcode.env.local
+xcuserdata/
