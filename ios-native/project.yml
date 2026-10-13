@@ -9,6 +9,8 @@ settings:
     SWIFT_VERSION: "5.0"
     CODE_SIGN_STYLE: Automatic
     SWIFT_ENABLE_BATCH_MODE: NO
+    HEADER_SEARCH_PATHS:
+      - "$(SRCROOT)/HongguoTV/Crypto/gmssl/include"
 targets:
   HongguoTV:
     type: application
@@ -19,7 +21,33 @@ targets:
           - Info.plist
     settings:
       base:
+        PRODUCT_NAME: "$(TARGET_NAME)"
         PRODUCT_BUNDLE_IDENTIFIER: com.hongguotv.tvos
         TVOS_DEPLOYMENT_TARGET: "17.0"
         INFOPLIST_FILE: HongguoTV/Info.plist
         GENERATE_INFOPLIST_FILE: NO
+        SWIFT_OBJC_BRIDGING_HEADER: HongguoTV/Crypto/BridgingHeader.h
+        ENABLE_TESTABILITY: YES
+  HongguoTVTests:
+    type: bundle.unit-test
+    platform: tvOS
+    sources:
+      - path: HongguoTVTests
+    dependencies:
+      - target: HongguoTV
+    settings:
+      base:
+        PRODUCT_NAME: "$(TARGET_NAME)"
+        PRODUCT_BUNDLE_IDENTIFIER: com.hongguotv.tvos.tests
+        TVOS_DEPLOYMENT_TARGET: "17.0"
+        GENERATE_INFOPLIST_FILE: YES
+        BUNDLE_LOADER: "$(TEST_HOST)"
+        ENABLE_TESTABILITY: YES
+schemes:
+  HongguoTV:
+    build:
+      targets:
+        HongguoTV: all
+    test:
+      targets:
+        - HongguoTVTests

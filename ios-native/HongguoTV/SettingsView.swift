@@ -1,18 +1,13 @@
 import SwiftUI
 import AVKit
 
-// MARK: - 设置页（服务地址 / 口令 / 连接测试 / 测试播放器）
+// MARK: - 设置页（直连模式自检 / 测试播放器）
 
 struct SettingsView: View {
-    @EnvironmentObject private var store: LocalStore
-    @State private var urlText = ""
-    @State private var tokenText = ""
     @State private var checking = false
     @State private var status: String?
     @State private var statusOk = false
     @State private var showTestPlayer = false
-    @FocusState private var urlFocused: Bool
-    @FocusState private var tokenFocused: Bool
 
     var body: some View {
         ScrollView {
@@ -21,31 +16,21 @@ struct SettingsView: View {
                     .font(.system(size: 34, weight: .heavy))
                     .foregroundStyle(Theme.textPrimary)
                     .padding(.bottom, 6)
-                Text("连接你的内容服务")
+                Text("直连模式")
                     .font(.system(size: 26, weight: .semibold))
                     .foregroundStyle(Theme.textSecondary)
                     .padding(.bottom, 10)
-                Text("电视和运行服务的电脑/NAS 连接同一网络，填入服务启动后显示的地址。")
+                Text("本应用已脱离 Node 服务端：内容来自官网页面与 fqnovel App 接口，播放流在设备内直接解密，无需局域网服务。")
                     .font(.system(size: 20))
                     .foregroundStyle(Theme.textTertiary)
                     .padding(.bottom, 30)
 
                 VStack(spacing: 22) {
-                    field(label: "服务地址", icon: "link") {
-                        TextField("http://localhost:8787", text: $urlText)
-                            .focused($urlFocused)
-                            .keyboardType(.URL)
-                    }
-                    field(label: "访问口令（服务未设置时留空）", icon: "key.fill") {
-                        TextField("", text: $tokenText)
-                            .focused($tokenFocused)
-                    }
-
                     HStack(spacing: 20) {
                         Button {
                             connect()
                         } label: {
-                            Label(checking ? "连接中…" : "连接并保存", systemImage: "bolt.fill")
+                            Label(checking ? "检查中…" : "检查直连", systemImage: "bolt.fill")
                         }
                         .primaryAction()
 
@@ -82,29 +67,10 @@ struct SettingsView: View {
             .padding(.bottom, 60)
         }
         .onAppear {
-            urlText = store.settings.baseUrl
-            tokenText = store.settings.token
+            if status == nil { connect() }
         }
         .fullScreenCover(isPresented: $showTestPlayer) {
             TestPlayerView().ignoresSafeArea()
-        }
-    }
-
-    private func field<Content: View>(label: String, icon: String, @ViewBuilder content: () -> Content) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Label(label, systemImage: icon)
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundStyle(Theme.textSecondary)
-            content()
-                .font(.system(size: 24))
-                .padding(.horizontal, 18)
-                .padding(.vertical, 14)
-                .background(Color.white.opacity(0.06))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(urlFocused || tokenFocused ? Color.white : Theme.glassStroke, lineWidth: 1)
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }
 
@@ -120,20 +86,13 @@ struct SettingsView: View {
     }
 
     private func connect() {
-        let base = normalize(urlText)
-        let token = tokenText.trimmingCharacters(in: .whitespacesAndNewlines)
         checking = true
         status = nil
         Task {
             do {
-                let api = APIClient(baseUrl: base, token: token)
-                let health = try await api.health()
-                store.settings.baseUrl = base
-                store.settings.token = token
-                store.connectedBaseUrl = base
-                store.save()
+                let api = ContentClient()
+                status = try await api.health()
                 statusOk = true
-                status = "连接成功（\(health.service) v\(health.version)，接口 v\(health.apiVersion)）"
             } catch {
                 statusOk = false
                 status = errorMessage(error)
@@ -142,17 +101,9 @@ struct SettingsView: View {
         }
     }
 
-    private func normalize(_ input: String) -> String {
-        var s = input.trimmingCharacters(in: .whitespacesAndNewlines)
-        if s.hasSuffix("/") { s.removeLast() }
-        if !s.hasPrefix("http://") && !s.hasPrefix("https://") {
-            s = "http://" + s
-        }
-        return s
-    }
-
     private func errorMessage(_ e: Error) -> String {
-        if let ae = e as? APIError { return ae.errorDescription ?? "连接失败" }
-        return "连接失败"
+        if let ce = e as? ContentError { return ce.errorDescription ?? "直连失败" }
+        if let ae = e as? APIError { return ae.errorDescription ?? "直连失败" }
+        return "直连失败"
     }
 }

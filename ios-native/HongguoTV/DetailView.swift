@@ -234,7 +234,7 @@ struct DetailView: View {
     private func loadDetail() async {
         busy = true
         defer { busy = false }
-        let api = APIClient(baseUrl: store.settings.baseUrl, token: store.settings.token)
+        let api = ContentClient()
         do {
             detail = try await api.detail(id: series.id)
         } catch let caught {
@@ -253,7 +253,7 @@ struct DetailView: View {
         playbackBusy = true
         playbackError = nil
         Task {
-            let api = APIClient(baseUrl: store.settings.baseUrl, token: store.settings.token)
+            let api = ContentClient()
             do {
                 let info = try await api.play(episodeId: target.id, fresh: fresh)
                 playback = info
@@ -266,6 +266,7 @@ struct DetailView: View {
     }
 
     private func errorMessage(_ e: Error) -> String {
+        if let ce = e as? ContentError { return ce.errorDescription ?? "请求失败" }
         if let ae = e as? APIError { return ae.errorDescription ?? "请求失败" }
         return "请求失败"
     }
@@ -297,11 +298,10 @@ struct NativePlayer: View {
         }
         .onAppear {
             guard player == nil else { return }
-            // tvOS 不支持 AVURLAssetHTTPHeaderFieldsKey，改用自定义 scheme
-            // （AuthURLProtocol）在转发请求时注入 Bearer 鉴权头
-            let authUri = playback.uri.replacingOccurrences(of: "http://", with: "authstream://")
-            guard let url = URL(string: authUri) else { return }
+            // 直连模式：cenc:// 由 CENCResourceLoader 拉取源站流并分段解密，直接喂给 AVPlayer
+            guard let url = URL(string: playback.uri) else { return }
             let asset = AVURLAsset(url: url)
+            asset.resourceLoader.setDelegate(CENCResourceLoader.shared, queue: .global(qos: .userInitiated))
             let item = AVPlayerItem(asset: asset)
             let p = AVPlayer(playerItem: item)
             if let resume = store.progress(for: series.id),
@@ -487,7 +487,7 @@ struct ActorWorksView: View {
     private func load() async {
         busy = true
         defer { busy = false }
-        let api = APIClient(baseUrl: store.settings.baseUrl, token: store.settings.token)
+        let api = ContentClient()
         do {
             let (p, list) = try await api.actorSearch(query: actor.name, page: 1)
             profile = p
@@ -503,7 +503,7 @@ struct ActorWorksView: View {
         guard !busy else { return }
         busy = true
         defer { busy = false }
-        let api = APIClient(baseUrl: store.settings.baseUrl, token: store.settings.token)
+        let api = ContentClient()
         do {
             let next = page + 1
             let (_, more) = try await api.actorSearch(query: actor.name, page: next)
@@ -514,6 +514,7 @@ struct ActorWorksView: View {
     }
 
     private func errorMessage(_ e: Error) -> String {
+        if let ce = e as? ContentError { return ce.errorDescription ?? "请求失败" }
         if let ae = e as? APIError { return ae.errorDescription ?? "请求失败" }
         return "请求失败"
     }

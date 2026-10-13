@@ -68,7 +68,6 @@ struct HomeView: View {
             }
         }
         .task { await connectAndLoad() }
-        .onChange(of: store.settings.baseUrl) { _, _ in Task { await reload() } }
     }
 
     // MARK: - 横版分类块
@@ -146,7 +145,7 @@ struct HomeView: View {
         busy = true
         error = nil
         defer { busy = false }
-        let api = APIClient(baseUrl: store.settings.baseUrl, token: store.settings.token)
+        let api = ContentClient()
         do {
             _ = try await api.health()
             connected = true
@@ -162,7 +161,7 @@ struct HomeView: View {
     }
 
     private func connectAndLoad() async {
-        let api = APIClient(baseUrl: store.settings.baseUrl, token: store.settings.token)
+        let api = ContentClient()
         do {
             _ = try await api.health()
             connected = true
@@ -179,7 +178,7 @@ struct HomeView: View {
     private func reload() async {
         busy = true
         defer { busy = false }
-        let api = APIClient(baseUrl: store.settings.baseUrl, token: store.settings.token)
+        let api = ContentClient()
         do {
             _ = try await api.health()
             connected = true
@@ -199,7 +198,7 @@ struct HomeView: View {
         guard !busy else { return }
         busy = true
         defer { busy = false }
-        let api = APIClient(baseUrl: store.settings.baseUrl, token: store.settings.token)
+        let api = ContentClient()
         do {
             let next = page + 1
             let (_, more) = try await api.category(typeId: selectedCategory, page: next)

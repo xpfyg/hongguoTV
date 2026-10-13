@@ -73,7 +73,7 @@ struct SearchView: View {
         busy = true
         error = nil
         Task {
-            let api = APIClient(baseUrl: store.settings.baseUrl, token: store.settings.token)
+            let api = ContentClient()
             do {
                 items = try await api.search(query: keyword, page: 1)
             } catch let caught {
