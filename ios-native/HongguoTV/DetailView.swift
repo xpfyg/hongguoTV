@@ -172,8 +172,6 @@ struct DetailView: View {
                     )
                     .clipShape(RoundedRectangle(cornerRadius: 14))
                 }
-                .buttonStyle(.plain)
-                .focusCard(radius: 14)
             }
         }
     }

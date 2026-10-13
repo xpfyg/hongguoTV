@@ -12,32 +12,6 @@ enum Theme {
     static let glassStroke = Color.white.opacity(0.14)
 }
 
-/// 海报卡片聚焦效果：1.08 弹性放大 + 白描边 + 深投影（类似 Infuse 网格）
-/// 通过 @Environment(\.isFocused) 感知聚焦，不叠加 .focusable/.focused，
-/// 避免覆盖 Button 的默认选择语义（否则遥控器确认键无法触发按钮）
-struct FocusCard: ViewModifier {
-    @Environment(\.isFocused) private var isFocused
-    var radius: CGFloat = 14
-
-    func body(content: Content) -> some View {
-        content
-            .scaleEffect(isFocused ? 1.08 : 1.0)
-            .shadow(color: isFocused ? Color.black.opacity(0.9) : Color.black.opacity(0.35),
-                    radius: isFocused ? 22 : 10, y: isFocused ? 14 : 6)
-            .overlay(
-                RoundedRectangle(cornerRadius: radius, style: .continuous)
-                    .stroke(isFocused ? Color.white : Color.clear, lineWidth: isFocused ? 2 : 0)
-            )
-            .animation(.spring(response: 0.22, dampingFraction: 0.72), value: isFocused)
-    }
-}
-
-extension View {
-    func focusCard(radius: CGFloat = 14) -> some View {
-        modifier(FocusCard(radius: radius))
-    }
-}
-
 /// 玻璃面板：系统毛玻璃材质 + 细描边（Infuse 的半透明面板质感）
 struct GlassPanel: ViewModifier {
     var radius: CGFloat = 24
@@ -77,7 +51,7 @@ struct ActionButtonStyle: ButtonStyle {
             .background(primary ? AnyShapeStyle(Theme.accent) : AnyShapeStyle(.ultraThinMaterial))
             .overlay(
                 Capsule()
-                    .stroke(isFocused ? Color.white : Theme.glassStroke, lineWidth: isFocused ? 2 : 1)
+                    .stroke(Theme.glassStroke, lineWidth: 1)
             )
             .foregroundStyle(primary ? Color.black : Color.white)
             .clipShape(Capsule())

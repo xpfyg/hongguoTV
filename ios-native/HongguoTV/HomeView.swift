@@ -148,7 +148,5 @@ struct PosterCard: View {
                     .multilineTextAlignment(.leading)
             }
         }
-        .buttonStyle(.plain)
-        .focusCard()
     }
 }
