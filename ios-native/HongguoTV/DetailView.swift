@@ -40,7 +40,7 @@ struct DetailView: View {
                 HStack(alignment: .top, spacing: 48) {
                     // 上：竖版海报
                     PosterImage(url: series.cover, corner: 20)
-                        .frame(width: 240, height: 360)
+                        .frame(width: 200, height: 300)
 
                         // 右：上为名称/简介/操作，下为选集
                         VStack(alignment: .leading, spacing: 0) {
@@ -48,7 +48,7 @@ struct DetailView: View {
                                 Text(series.title)
                                     .font(.system(size: 46, weight: .heavy))
                                     .foregroundStyle(Theme.textPrimary)
-                                    .lineLimit(2)
+                                    .lineLimit(1)
                                 HStack(spacing: 12) {
                                     badge(series.badge)
                                     Text(series.tags)
@@ -93,19 +93,65 @@ struct DetailView: View {
                                         .foregroundStyle(Theme.accent)
                                         .padding(.top, 4)
                                 }
+
+                                // 演职人员（服务端未返回时自动隐藏）
+                                if let detail, let celes = detail.celebrities, !celes.isEmpty {
+                                    VStack(alignment: .leading, spacing: 10) {
+                                        Text("演职人员")
+                                            .font(.system(size: 20, weight: .semibold))
+                                            .foregroundStyle(Theme.textSecondary)
+                                        ScrollView(.horizontal, showsIndicators: false) {
+                                            HStack(spacing: 18) {
+                                                ForEach(celes) { c in
+                                                    VStack(spacing: 4) {
+                                                        AvatarImage(url: c.avatar, name: c.name, size: 44)
+                                                        VStack(spacing: 1) {
+                                                            Text(c.name)
+                                                                .font(.system(size: 15, weight: .semibold))
+                                                                .foregroundStyle(Theme.textPrimary)
+                                                                .lineLimit(1)
+                                                            if !c.role.isEmpty {
+                                                                Text(c.role)
+                                                                    .font(.system(size: 12))
+                                                                    .foregroundStyle(Theme.textSecondary)
+                                                                    .lineLimit(1)
+                                                            }
+                                                        }
+                                                        .frame(width: 88)
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    .padding(.top, 8)
+                                }
                             }
                         }
                     }
                     .padding(.top, 20)
 
-                    // 下：选集（整行排列）
-                    VStack(alignment: .leading, spacing: 18) {
+                    // 下：选集（独立滚动，任意集数可容纳）
+                    VStack(alignment: .leading, spacing: 14) {
                         if let detail, showEpisodes {
                             if !detail.episodes.isEmpty {
                                 Text("选集")
                                     .font(.system(size: 28, weight: .heavy))
                                     .foregroundStyle(Theme.textPrimary)
-                                episodesGrid(detail.episodes)
+                                ScrollViewReader { proxy in
+                                    ScrollView(.vertical, showsIndicators: false) {
+                                        episodesGrid(detail.episodes)
+                                            .id("ep-top")
+                                    }
+                                    .onAppear {
+                                        DispatchQueue.main.async {
+                                            proxy.scrollTo("ep-top", anchor: .top)
+                                        }
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                                            proxy.scrollTo("ep-top", anchor: .top)
+                                        }
+                                    }
+                                    .frame(height: 620)
+                                }
                             }
                         } else if busy {
                             ProgressView().scaleEffect(1.3)
@@ -115,7 +161,7 @@ struct DetailView: View {
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.top, 28)
+                    .padding(.top, 20)
                 }
                 .padding(.horizontal, 72)
                 .padding(.bottom, 40)

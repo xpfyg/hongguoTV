@@ -1,5 +1,6 @@
 import http from "node:http";
 import { timingSafeEqual } from "node:crypto";
+import { CATEGORY_IDS } from "./provider.mjs";
 
 export function byteRange(value, total) {
   if (!value) return [0, total - 1];
@@ -66,6 +67,15 @@ export function createServer(provider, token = "") {
             ? await provider.home(page)
             : await provider.search(keyword, page)
         );
+      }
+      const category = /^\/api\/category\/([a-z_]+)$/.exec(url.pathname);
+      if (category) {
+        if (!CATEGORY_IDS.includes(category[1]))
+          return json(400, { error: "不支持的分类" });
+        const page = Number(url.searchParams.get("page") || 1);
+        if (!Number.isInteger(page) || page < 1 || page > 100)
+          return json(400, { error: "分页参数无效" });
+        return json(200, await provider.category(category[1], page));
       }
       const detail = /^\/api\/series\/(\d{1,30})$/.exec(url.pathname);
       if (detail) return json(200, await provider.detail(detail[1]));

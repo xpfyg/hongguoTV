@@ -93,3 +93,28 @@ struct PosterImage: View {
         .clipShape(RoundedRectangle(cornerRadius: corner, style: .continuous))
     }
 }
+
+// MARK: - 演员头像（圆形 + 姓名首字占位）
+
+struct AvatarImage: View {
+    let url: String
+    let name: String
+    var size: CGFloat = 56
+
+    var body: some View {
+        AsyncImage(url: URL(string: url)) { phase in
+            if case .success(let image) = phase {
+                image.resizable().scaledToFill()
+            } else {
+                ZStack {
+                    Circle().fill(Color(white: 0.16))
+                    Text(String(name.prefix(1)))
+                        .font(.system(size: size * 0.4, weight: .bold))
+                        .foregroundStyle(Theme.textSecondary)
+                }
+            }
+        }
+        .frame(width: size, height: size)
+        .clipShape(Circle())
+    }
+}

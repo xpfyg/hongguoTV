@@ -89,3 +89,30 @@ test("bad identifiers and invalid queries never reach provider", async (t) => {
     404
   );
 });
+test("category endpoint validates type ids and pages, then forwards to provider", async (t) => {
+  const seen = [];
+  const url = await fixture(t, {
+    category: async (typeId, page) => {
+      seen.push([typeId, page]);
+      return {
+        type_id: typeId,
+        type_name: "真人剧",
+        items: [{ id: "1", title: "首辅娇娘" }],
+        page,
+      };
+    },
+  });
+  const res = await fetch(url + "/api/category/human?page=2");
+  assert.equal(res.status, 200);
+  assert.deepEqual(await res.json(), {
+    type_id: "human",
+    type_name: "真人剧",
+    items: [{ id: "1", title: "首辅娇娘" }],
+    page: 2,
+  });
+  assert.deepEqual(seen, [["human", 2]]);
+  assert.equal((await fetch(url + "/api/category/unknown")).status, 400);
+  assert.equal((await fetch(url + "/api/category/human?page=abc")).status, 400);
+  assert.equal((await fetch(url + "/api/category/human?page=0")).status, 400);
+  assert.equal((await fetch(url + "/api/category/human?page=101")).status, 400);
+});

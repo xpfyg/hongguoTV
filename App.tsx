@@ -41,6 +41,7 @@ const sample: Detail = {
   description: "",
   badge: "",
   tags: "",
+  celebrities: [],
   episodes: [{ id: "test", number: 1, title: "测试片" }],
 };
 export default function App() {

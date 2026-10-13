@@ -14,6 +14,7 @@ const detail: Detail = {
   description: "",
   badge: "",
   tags: "",
+  celebrities: [],
   episodes: [
     { id: "b", number: 1, title: "一" },
     { id: "a", number: 2, title: "二" },

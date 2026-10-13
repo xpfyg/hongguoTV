@@ -17,6 +17,13 @@ struct Episode: Codable, Identifiable, Hashable {
     let title: String
 }
 
+struct Celebrity: Codable, Identifiable, Hashable {
+    let id: String
+    let name: String
+    let role: String
+    let avatar: String
+}
+
 struct Detail: Codable, Identifiable, Hashable {
     let id: String
     let title: String
@@ -24,6 +31,8 @@ struct Detail: Codable, Identifiable, Hashable {
     let description: String
     let badge: String
     let tags: String
+    // 兼容旧服务端进程不返回该字段
+    let celebrities: [Celebrity]?
     let episodes: [Episode]
 }
 

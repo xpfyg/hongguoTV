@@ -20,7 +20,7 @@ export class BridgeProvider implements ContentProvider {
         headers: this.headers(),
         signal: abort.signal,
       });
-      const data = await response.json();
+      const data: any = await response.json();
       if (!response.ok)
         throw new Error(data.error || `服务返回 ${response.status}`);
       return data;
@@ -62,7 +62,10 @@ export class BridgeProvider implements ContentProvider {
     const data = await this.request(`/api/series/${encodeURIComponent(id)}`);
     if (!Array.isArray(data.episodes) || !data.episodes.length)
       throw new Error("这部剧暂时没有可播放的分集");
-    return data;
+    return {
+      ...data,
+      celebrities: Array.isArray(data.celebrities) ? data.celebrities : [],
+    };
   }
   async resolve(id: string, fresh = false): Promise<Playback> {
     const data = await this.request(

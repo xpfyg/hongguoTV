@@ -50,6 +50,17 @@ export function DetailTV({
           <Text style={s.muted} numberOfLines={1}>
             {detail.badge} · {detail.tags}
           </Text>
+          {detail.celebrities.length > 0 && (
+            <Text style={s.cast} numberOfLines={2}>
+              {detail.celebrities
+                .map((c) =>
+                  c.role && c.role !== c.name
+                    ? `${c.name}（饰 ${c.role}）`
+                    : c.name
+                )
+                .join(" · ")}
+            </Text>
+          )}
           <Text style={s.description} numberOfLines={expanded ? undefined : 2}>
             {detail.description}
           </Text>
@@ -136,6 +147,7 @@ const s = StyleSheet.create({
     color: palette.text,
   },
   muted: { fontSize: 17, color: palette.muted },
+  cast: { fontSize: 17, lineHeight: 24, color: palette.muted },
   description: { fontSize: 19, lineHeight: 28, color: palette.muted },
   row: { flexDirection: "row", flexWrap: "wrap", gap: 14 },
   section: {

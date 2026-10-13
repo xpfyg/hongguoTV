@@ -11,7 +11,14 @@ export interface Episode {
   number: number;
   title: string;
 }
+export interface Celebrity {
+  id: string;
+  name: string;
+  role: string;
+  avatar: string;
+}
 export interface Detail extends Series {
+  celebrities: Celebrity[];
   episodes: Episode[];
 }
 export interface Progress {
