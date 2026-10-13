@@ -104,14 +104,7 @@ struct SearchView: View {
                                     .foregroundStyle(Theme.textPrimary)
                                     .padding(.horizontal, 18)
                                     .padding(.vertical, 10)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 16)
-                                            .fill(Color.white.opacity(0.06))
-                                    )
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 16)
-                                            .stroke(Theme.glassStroke, lineWidth: 1)
-                                    )
+                                    .glassTile(radius: 16)
                             }
                             .buttonStyle(.plain)
                         }
@@ -145,14 +138,7 @@ struct SearchView: View {
                                     .foregroundStyle(Theme.textPrimary)
                                     .padding(.horizontal, 18)
                                     .padding(.vertical, 10)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 16)
-                                            .fill(Theme.accent.opacity(0.16))
-                                    )
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 16)
-                                            .stroke(Theme.accent.opacity(0.5), lineWidth: 1.2)
-                                    )
+                                    .glassTile(selected: true, radius: 16, idleFill: Theme.accent.opacity(0.16))
                             }
                             .buttonStyle(.plain)
                         }

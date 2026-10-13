@@ -6,6 +6,7 @@ struct HongguoTVApp: App {
 
     init() {
         URLProtocol.registerClass(AuthURLProtocol.self)
+        Diagnostics.setupCrashCapture()
     }
 
     var body: some Scene {

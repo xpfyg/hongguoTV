@@ -22,6 +22,7 @@
 		7005EF39708B68EA238308CF /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA9C0734CF1BA31225859EA5 /* ContentView.swift */; };
 		8327A91730E831F20EE708EA /* SM3Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F178DAC8FB2F3D2FAB65BC3E /* SM3Tests.swift */; };
 		858FDADE87A5F5C3C465C458 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C80C98A29D2E0598D496C8A /* SettingsView.swift */; };
+		F9616AAF3F47E74DAF5D7DC1 /* Diagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = 733D0CEBA98263679AA5EFF4 /* Diagnostics.swift */; };
 		87BE6D7359301266D5D8B0A7 /* ContentRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43E2B51D41E5465CAF8F1682 /* ContentRepository.swift */; };
 		91018AB3A40C769A5F70FF50 /* PlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE59D34814341A3A6AE2B650 /* PlayerView.swift */; };
 		AE8174BA0E2DD340D2B53E60 /* SM3.swift in Sources */ = {isa = PBXBuildFile; fileRef = E62EAA191BADEA70104A52D5 /* SM3.swift */; };
@@ -62,6 +63,7 @@
 		52DBAF6E25F9E9D7ACCAD1FA /* DetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailView.swift; sourceTree = "<group>"; };
 		683EF6335AE45A56537595E9 /* LocalStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalStore.swift; sourceTree = "<group>"; };
 		6C80C98A29D2E0598D496C8A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		733D0CEBA98263679AA5EFF4 /* Diagnostics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Diagnostics.swift; sourceTree = "<group>"; };
 		6E1A9EFA59597CDBEDB60E34 /* HongguoTVApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HongguoTVApp.swift; sourceTree = "<group>"; };
 		7B61443B85B033D65B5808B5 /* signing.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = signing.json; sourceTree = "<group>"; };
 		7CF79F5F3E136267CFA707AD /* HongguoTVTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = HongguoTVTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -194,6 +196,7 @@
 				9205B8369A1B273521F155EB /* RemoteVideo.swift */,
 				D92AB9CE2D6C1647143E729D /* SearchView.swift */,
 				6C80C98A29D2E0598D496C8A /* SettingsView.swift */,
+				733D0CEBA98263679AA5EFF4 /* Diagnostics.swift */,
 				F2B80E4C724DCDA3A02619D1 /* Theme.swift */,
 				7ECDE6CCE72E0A5F5B1A79CB /* Crypto */,
 			);
@@ -313,6 +316,7 @@
 				AE8174BA0E2DD340D2B53E60 /* SM3.swift in Sources */,
 				B4B40C91EFA775A7DF04A931 /* SearchView.swift in Sources */,
 				858FDADE87A5F5C3C465C458 /* SettingsView.swift in Sources */,
+				F9616AAF3F47E74DAF5D7DC1 /* Diagnostics.swift in Sources */,
 				FF120DBA0240DADA7BFC3972 /* Signer.swift in Sources */,
 				BAA56531BC70FBB6BC8A8A38 /* Theme.swift in Sources */,
 				524F51AEC0CCC0EB42ADB839 /* VendorConstants.swift in Sources */,
@@ -350,7 +354,7 @@
 				SDKROOT = appletvos;
 				SWIFT_ENABLE_BATCH_MODE = NO;
 				SWIFT_VERSION = 5.0;
-				TVOS_DEPLOYMENT_TARGET = 17.0;
+				TVOS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Release;
 		};
@@ -364,7 +368,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.hongguotv.tvos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = HongguoTV/Crypto/BridgingHeader.h;
-				TVOS_DEPLOYMENT_TARGET = 17.0;
+				TVOS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Release;
 		};
@@ -377,7 +381,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.hongguotv.tvos.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HongguoTV.app/HongguoTV";
-				TVOS_DEPLOYMENT_TARGET = 17.0;
+				TVOS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Debug;
 		};
@@ -390,7 +394,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.hongguotv.tvos.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HongguoTV.app/HongguoTV";
-				TVOS_DEPLOYMENT_TARGET = 17.0;
+				TVOS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Release;
 		};
@@ -402,7 +406,7 @@
 				SDKROOT = appletvos;
 				SWIFT_ENABLE_BATCH_MODE = NO;
 				SWIFT_VERSION = 5.0;
-				TVOS_DEPLOYMENT_TARGET = 17.0;
+				TVOS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Debug;
 		};
@@ -416,7 +420,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.hongguotv.tvos;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_OBJC_BRIDGING_HEADER = HongguoTV/Crypto/BridgingHeader.h;
-				TVOS_DEPLOYMENT_TARGET = 17.0;
+				TVOS_DEPLOYMENT_TARGET = 26.0;
 			};
 			name = Debug;
 		};

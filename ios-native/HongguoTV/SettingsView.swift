@@ -1,13 +1,13 @@
 import SwiftUI
 import AVKit
 
-// MARK: - 设置页（直连模式自检 / 测试播放器）
+// MARK: - 设置页（测试播放器 / 诊断反馈）
 
 struct SettingsView: View {
-    @State private var checking = false
-    @State private var status: String?
-    @State private var statusOk = false
     @State private var showTestPlayer = false
+    @State private var notes = ""
+    @State private var report: String?
+    @State private var savedPath: String?
 
     var body: some View {
         ScrollView {
@@ -15,25 +15,10 @@ struct SettingsView: View {
                 Text("设置")
                     .font(.system(size: 34, weight: .heavy))
                     .foregroundStyle(Theme.textPrimary)
-                    .padding(.bottom, 6)
-                Text("直连模式")
-                    .font(.system(size: 26, weight: .semibold))
-                    .foregroundStyle(Theme.textSecondary)
-                    .padding(.bottom, 10)
-                Text("本应用已脱离 Node 服务端：内容来自官网页面与 fqnovel App 接口，播放流在设备内直接解密，无需局域网服务。")
-                    .font(.system(size: 20))
-                    .foregroundStyle(Theme.textTertiary)
                     .padding(.bottom, 30)
 
                 VStack(spacing: 22) {
                     HStack(spacing: 20) {
-                        Button {
-                            connect()
-                        } label: {
-                            Label(checking ? "检查中…" : "检查直连", systemImage: "bolt.fill")
-                        }
-                        .primaryAction()
-
                         Button {
                             showTestPlayer = true
                         } label: {
@@ -42,14 +27,67 @@ struct SettingsView: View {
                         .glassAction()
                     }
                     .padding(.top, 8)
+                }
+                .padding(34)
+                .glassPanel(radius: 24)
 
-                    if let status {
-                        HStack(spacing: 10) {
-                            Image(systemName: statusOk ? "checkmark.circle.fill" : "xmark.circle.fill")
-                                .foregroundStyle(statusOk ? .green : Theme.accent)
-                            Text(status)
-                                .font(.system(size: 20))
-                                .foregroundStyle(statusOk ? Theme.textSecondary : Theme.accent)
+                // MARK: 诊断反馈
+
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("诊断反馈")
+                        .font(.system(size: 26, weight: .semibold))
+                        .foregroundStyle(Theme.textSecondary)
+                        .padding(.top, 34)
+                    Text("应用出问题时，可填写问题描述并生成诊断报告。崩溃日志会自动记录在本地并包含在报告中。")
+                        .font(.system(size: 20))
+                        .foregroundStyle(Theme.textTertiary)
+                    Text("反馈方式：报告会完整显示在屏幕上（可用手机拍屏/录屏），同时保存到设备「诊断文件」目录，可通过 Xcode 设备文件取出后发给开发者。")
+                        .font(.system(size: 18))
+                        .foregroundStyle(Theme.textTertiary)
+
+                    TextField("问题描述（可选）：如「打开某剧集闪退」", text: $notes)
+                        .textFieldStyle(.plain)
+                        .font(.system(size: 20))
+                        .foregroundStyle(Theme.textPrimary)
+                        .padding(.horizontal, 20)
+                        .padding(.vertical, 14)
+                        .glassTile(radius: 16)
+
+                    HStack(spacing: 20) {
+                        Button {
+                            report = Diagnostics.collectReport(notes: notes)
+                            savedPath = nil
+                        } label: {
+                            Label(report == nil ? "生成诊断报告" : "重新生成", systemImage: "wrench.and.screwdriver.fill")
+                        }
+                        .primaryAction()
+
+                        if report != nil {
+                            Button {
+                                if let url = Diagnostics.saveReport(report ?? "") {
+                                    savedPath = url.path
+                                }
+                            } label: {
+                                Label(savedPath == nil ? "保存到设备" : "已保存", systemImage: "square.and.arrow.down.fill")
+                            }
+                            .glassAction()
+                        }
+                    }
+
+                    if let report {
+                        ScrollView(.vertical) {
+                            Text(report)
+                                .font(.system(size: 14, design: .monospaced))
+                                .foregroundStyle(Theme.textSecondary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(18)
+                        }
+                        .frame(maxHeight: 460)
+                        .glassPanel(radius: 16)
+                        if let savedPath {
+                            Text("已保存：\(savedPath)")
+                                .font(.system(size: 16, design: .monospaced))
+                                .foregroundStyle(Theme.textTertiary)
                         }
                     }
                 }
@@ -66,9 +104,6 @@ struct SettingsView: View {
             .padding(.horizontal, 72)
             .padding(.bottom, 60)
         }
-        .onAppear {
-            if status == nil { connect() }
-        }
         .fullScreenCover(isPresented: $showTestPlayer) {
             TestPlayerView().ignoresSafeArea()
         }
@@ -83,27 +118,5 @@ struct SettingsView: View {
                 .font(.system(size: 19))
                 .foregroundStyle(Theme.textTertiary)
         }
-    }
-
-    private func connect() {
-        checking = true
-        status = nil
-        Task {
-            do {
-                let api = ContentClient()
-                status = try await api.health()
-                statusOk = true
-            } catch {
-                statusOk = false
-                status = errorMessage(error)
-            }
-            checking = false
-        }
-    }
-
-    private func errorMessage(_ e: Error) -> String {
-        if let ce = e as? ContentError { return ce.errorDescription ?? "直连失败" }
-        if let ae = e as? APIError { return ae.errorDescription ?? "直连失败" }
-        return "直连失败"
     }
 }

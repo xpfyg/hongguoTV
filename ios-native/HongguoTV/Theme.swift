@@ -1,18 +1,29 @@
 import SwiftUI
 
-// MARK: - Infuse 风格主题：纯黑画布、海报主视觉、聚焦放大 + 白描边、玻璃面板
+// MARK: - Liquid Glass 主题：深色渐变画布（非纯黑）、半透明玻璃面板、聚焦高光选中块
 
 enum Theme {
-    static let background = Color(red: 0.02, green: 0.02, blue: 0.03) // #050508
-    static let panel = Color.black.opacity(0.55)
+    /// 深蓝紫渐变画布（Liquid Glass 深色调背景，非纯黑）
+    static let backgroundGradient = LinearGradient(
+        colors: [
+            Color(red: 0.17, green: 0.19, blue: 0.30), // 顶部偏亮蓝紫
+            Color(red: 0.09, green: 0.10, blue: 0.18),
+            Color(red: 0.05, green: 0.05, blue: 0.10),
+        ],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+    static let background = Color(red: 0.07, green: 0.08, blue: 0.14)
+    /// 面板底色：透出背景的深蓝紫半透明（不再用黑色）
+    static let panel = Color(red: 0.10, green: 0.12, blue: 0.22).opacity(0.45)
     static let accent = Color(red: 1.0, green: 0.42, blue: 0.29) // #FF6B4A
     static let textPrimary = Color.white
-    static let textSecondary = Color.white.opacity(0.72)
-    static let textTertiary = Color.white.opacity(0.45)
-    static let glassStroke = Color.white.opacity(0.14)
+    static let textSecondary = Color.white.opacity(0.78)
+    static let textTertiary = Color.white.opacity(0.5)
+    static let glassStroke = Color.white.opacity(0.18)
 }
 
-/// 玻璃面板：系统毛玻璃材质 + 细描边（Infuse 的半透明面板质感）
+/// 液态玻璃面板：系统毛玻璃材质 + 顶部高光渐变 + 细描边（模拟 Liquid Glass 反光）
 struct GlassPanel: ViewModifier {
     var radius: CGFloat = 24
     var fill: Color = Theme.panel
@@ -22,7 +33,16 @@ struct GlassPanel: ViewModifier {
             .background(.ultraThinMaterial)
             .overlay(
                 RoundedRectangle(cornerRadius: radius, style: .continuous)
-                    .fill(fill.opacity(0.18))
+                    .fill(fill)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: radius, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [.white.opacity(0.14), .clear],
+                            startPoint: .top, endPoint: .center
+                        )
+                    )
             )
             .overlay(
                 RoundedRectangle(cornerRadius: radius, style: .continuous)
@@ -35,6 +55,54 @@ struct GlassPanel: ViewModifier {
 extension View {
     func glassPanel(radius: CGFloat = 24, fill: Color = Theme.panel) -> some View {
         modifier(GlassPanel(radius: radius, fill: fill))
+    }
+}
+
+/// Liquid Glass 选中块（tvOS 26 原生 glassEffect）：常态为淡玻璃底 + 微光描边；聚焦/选中时原生液态玻璃亮起、白色亮描边 + 顶部高光 + 轻微放大
+struct GlassTile: ViewModifier {
+    var selected: Bool
+    var radius: CGFloat = 20
+    var idleFill = Color.white.opacity(0.06)
+    @Environment(\.isFocused) private var isFocused
+
+    private var active: Bool { selected || isFocused }
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        let shape = RoundedRectangle(cornerRadius: radius, style: .continuous)
+        if active {
+            content
+                .glassEffect(.regular, in: shape)
+                .overlay(
+                    shape.fill(
+                        LinearGradient(
+                            colors: [.white.opacity(0.30), .clear],
+                            startPoint: .top, endPoint: .center
+                        )
+                    )
+                )
+                .overlay(
+                    shape.stroke(
+                        isFocused ? Color.white.opacity(0.98) : Color.white.opacity(0.88),
+                        lineWidth: isFocused ? 2.2 : 1.4
+                    )
+                )
+                .clipShape(shape)
+                .scaleEffect(isFocused ? 1.05 : 1.0)
+                .shadow(color: .black.opacity(isFocused ? 0.65 : 0.22), radius: isFocused ? 20 : 8, y: 10)
+                .animation(.spring(response: 0.2, dampingFraction: 0.72), value: isFocused)
+        } else {
+            content
+                .background(shape.fill(idleFill))
+                .overlay(shape.stroke(Color.white.opacity(0.15), lineWidth: 1.4))
+                .clipShape(shape)
+        }
+    }
+}
+
+extension View {
+    func glassTile(selected: Bool = false, radius: CGFloat = 20, idleFill: Color = Color.white.opacity(0.05)) -> some View {
+        modifier(GlassTile(selected: selected, radius: radius, idleFill: idleFill))
     }
 }
 

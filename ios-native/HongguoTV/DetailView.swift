@@ -420,7 +420,7 @@ struct ActorWorksView: View {
 
     var body: some View {
         ZStack {
-            Theme.background.ignoresSafeArea()
+            Theme.backgroundGradient.ignoresSafeArea()
 
             VStack(alignment: .leading, spacing: 0) {
                 // 返回

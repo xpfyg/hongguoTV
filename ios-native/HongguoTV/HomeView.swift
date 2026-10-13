@@ -75,14 +75,6 @@ struct HomeView: View {
             }
         }
         .task { await connectAndLoad() }
-        .onChange(of: focusedCategory) { _, newFocus in
-            guard let newFocus else { return }
-            Task { await selectCategory(newFocus) }
-        }
-        .onChange(of: subFocus) { _, newFocus in
-            guard let newFocus else { return }
-            Task { await selectSub(newFocus == "all" ? nil : newFocus) }
-        }
     }
 
     private var subtitle: String {
@@ -127,17 +119,9 @@ struct HomeView: View {
             }
             .padding(.horizontal, 24)
             .padding(.vertical, 12)
-            .background(
-                RoundedRectangle(cornerRadius: 18)
-                    .fill(selected ? Theme.accent.opacity(0.28) : Color.white.opacity(0.06))
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 18)
-                    .stroke(selected ? Theme.accent : Color.clear, lineWidth: 2)
-            )
+            .glassTile(selected: selected, radius: 18)
         }
         .buttonStyle(.plain)
-        // tvOS：焦点移动到分类块即自动切换该分类，无需按确认键
         .focused($focusedCategory, equals: cat.id)
     }
 
@@ -167,16 +151,9 @@ struct HomeView: View {
             Text(name)
                 .font(.system(size: 19, weight: .semibold))
                 .foregroundStyle(selected ? Theme.accent : Theme.textPrimary)
-                .padding(.horizontal, 18)
-                .padding(.vertical, 9)
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(selected ? Theme.accent.opacity(0.22) : Color.white.opacity(0.05))
-                )
-                .overlay(
-                    RoundedRectangle(cornerRadius: 16)
-                        .stroke(selected ? Theme.accent : Color.clear, lineWidth: 1.6)
-                )
+                .padding(.horizontal, 16)
+                .padding(.vertical, 8)
+                .glassTile(selected: selected, radius: 15)
         }
         .buttonStyle(.plain)
         .focused($subFocus, equals: key)
@@ -313,17 +290,19 @@ struct HomeView: View {
     }
 }
 
-// MARK: - 海报卡片（2:3 竖版 + 标题）
+// MARK: - 海报卡片（2:3 竖版 + 标题；聚焦 = 放大 + 液态玻璃高亮）
 
 struct PosterCard: View {
     let series: Series
     let onSelect: () -> Void
     @State private var favorite = false
+    @Environment(\.isFocused) private var focused
 
     var body: some View {
         Button {
             onSelect()
-        } label: {            VStack(alignment: .leading, spacing: 10) {
+        } label: {
+            VStack(alignment: .leading, spacing: 10) {
                 ZStack(alignment: .topTrailing) {
                     PosterImage(url: series.cover, corner: 14)
                         .aspectRatio(2 / 3, contentMode: .fit)
@@ -343,10 +322,25 @@ struct PosterCard: View {
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)
             }
+            // 聚焦视觉：放大 + 白色亮描边 + 顶部玻璃高光 + 投影（tvOS 标准海报行为）
+            .scaleEffect(focused ? 1.06 : 1.0)
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .stroke(focused ? Color.white.opacity(0.95) : Color.clear, lineWidth: focused ? 2.5 : 0)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [.white.opacity(focused ? 0.16 : 0), .clear],
+                            startPoint: .top, endPoint: .center
+                        )
+                    )
+            )
+            .shadow(color: .black.opacity(focused ? 0.75 : 0.3), radius: focused ? 22 : 8, y: focused ? 14 : 6)
+            .animation(.spring(response: 0.2, dampingFraction: 0.72), value: focused)
         }
         .buttonStyle(.plain)
-        // tvOS：显式声明可聚焦；收藏角标在出现时一次性查询（onAppear 不影响焦点）
-        .focusable(true)
         .onAppear {
             let api = ContentClient()
             favorite = api.cache.isFavorite(seriesId: series.id)

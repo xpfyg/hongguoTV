@@ -33,7 +33,7 @@ struct ContentView: View {
                 .padding(.bottom, 24)
             content
         }
-        .background(Theme.background.ignoresSafeArea())
+        .background(Theme.backgroundGradient.ignoresSafeArea())
         .fullScreenCover(item: $detailSeries) { series in
             DetailView(series: series)
         }
@@ -56,23 +56,23 @@ struct ContentView: View {
     }
 }
 
-// MARK: - 顶部 Tab 栏
+// MARK: - 顶部 Tab 栏（居中 + 长方形毛玻璃包裹；聚焦/选中为 tvOS26 毛玻璃块）
 
 struct TabBar: View {
     @Binding var selection: AppTab
     @FocusState private var focusedTab: AppTab?
 
     var body: some View {
-        HStack(spacing: 10) {
+        HStack(spacing: 24) {
             HStack(spacing: 12) {
                 Image(systemName: "play.rectangle.fill")
-                    .font(.system(size: 28, weight: .bold))
+                    .font(.system(size: 26, weight: .bold))
                     .foregroundStyle(Theme.accent)
                 Text("红果 TV")
-                    .font(.system(size: 26, weight: .heavy))
+                    .font(.system(size: 24, weight: .heavy))
                     .foregroundStyle(.white)
             }
-            .padding(.trailing, 28)
+            .padding(.trailing, 6)
 
             ForEach(AppTab.allCases, id: \.self) { t in
                 Button {
@@ -82,23 +82,20 @@ struct TabBar: View {
                         Image(systemName: t.icon)
                         Text(t.rawValue)
                     }
-                    .font(.system(size: 22, weight: .semibold))
-                    .foregroundStyle(selection == t ? Color.black : Theme.textSecondary)
-                    .padding(.horizontal, 22)
-                    .padding(.vertical, 12)
-                    .background(selection == t ? Color.white : Color.clear)
-                    .clipShape(Capsule())
+                    .font(.system(size: 21, weight: .semibold))
+                    .foregroundStyle(selection == t ? Color.white : Theme.textSecondary)
+                    .padding(.horizontal, 20)
+                    .padding(.vertical, 11)
+                    .glassTile(selected: selection == t, radius: 18)
                 }
                 .buttonStyle(TabButtonStyle(selected: selection == t))
-                // tvOS：焦点移动到顶部 Tab 即自动切换，无需按确认键
                 .focused($focusedTab, equals: t)
             }
-            Spacer(minLength: 0)
         }
-        .onChange(of: focusedTab) { _, newFocus in
-            guard let newFocus else { return }
-            selection = newFocus
-        }
+        .padding(.horizontal, 34)
+        .padding(.vertical, 16)
+        .glassPanel(radius: 30)
+        .frame(maxWidth: .infinity) // 整条毛玻璃居中
     }
 }
 
