@@ -207,9 +207,8 @@ final class Signer {
 
     // MARK: - device proto / xmxor
 
-    private func deviceProto() -> [UInt8] {
-        let device = VendorConstants.device
-        func value(_ key: String) -> String { device.first { $0.0 == key }!.1 }
+    private func deviceProto(_ dev: [(String, String)]) -> [UInt8] {
+        func value(_ key: String) -> String { dev.first { $0.0 == key }!.1 }
         return proto([
             f(1, .sint(1)), f(2, .sint(2)), f(3, .string("8662")),
             f(4, .string(value("device_id"))), f(5, .string("Ai6svO3PyrwDOUSmO6ZcResxu")),
@@ -259,7 +258,8 @@ final class Signer {
 
     // MARK: - medusa / helios
 
-    func medusa(_ url: String, _ body: [UInt8]?, _ ts: UInt32) -> String {
+    func medusa(_ url: String, _ body: [UInt8]?, _ ts: UInt32, device: [(String, String)]? = nil) -> String {
+        let dev = device ?? VendorConstants.device
         let bodyMd5 = body.map { md5($0) } ?? [UInt8](repeating: 0, count: 16)
         let query = url.split(separator: "?", maxSplits: 1).last.map { [UInt8]($0.utf8) } ?? []
         let querySm3 = SM3.digest(Data(query)).map { $0 }
@@ -270,11 +270,11 @@ final class Signer {
         let messageRand = UInt64(rand())
         let envLaunch = Int(random() * 21) + 100
         let envPid = Int(random() * 2000) + 10001
-        let version = VendorConstants.device.first { $0.0 == "version_name" }!.1
+        let version = dev.first { $0.0 == "version_name" }!.1
         let env = proto([
             f(1, .sint(Int64(envLaunch))), f(2, .sint(146331399)), f(3, .sint(146331396)),
             f(5, .sint(7)), f(6, .string("v04.06.04.03-bugfix")), f(7, .sint(Int64(envPid))),
-            f(12, .bytes(deviceProto())),
+            f(12, .bytes(deviceProto(dev))),
             f(13, .bytes(proto([f(1, .sint(Int64(clock() / 1000))), f(2, .sint(-2)), f(4, .sint(200))]))),
             f(14, .string(version)),
         ])
@@ -282,7 +282,7 @@ final class Signer {
         let message = proto([
             f(1, .bytes(hexBytes("f7e85ffad7d7dc3bd62ac87057cf6118"))), f(2, .sint(3)),
             f(3, .sint(Int64(bitPattern: messageRand))), f(4, .string("8662")),
-            f(5, .string(VendorConstants.device.first { $0.0 == "device_id" }!.1)),
+            f(5, .string(dev.first { $0.0 == "device_id" }!.1)),
             f(6, .string("1588093228")), f(7, .string(version)),
             f(8, .string("v04.06.04-ml-android")), f(9, .sint(67503104)),
             f(10, .bytes(hexBytes("4001000000000000"))), f(12, .sint(Int64(ts))),
@@ -387,7 +387,7 @@ final class Signer {
             ("x-argus", le32(ts).base64Str),
             ("x-gorgon", gorgon(query, body, ts, random)),
             ("x-helios", helios(ts)),
-            ("x-medusa", medusa(url, body, ts)),
+            ("x-medusa", medusa(url, body, ts, device: values)),
             ("x-tt-dt", ""),
         ]
         if body != nil {

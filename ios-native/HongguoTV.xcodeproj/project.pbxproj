@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 70;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
@@ -49,7 +49,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		01F44882075D774B91D7C2A3 /* LICENSE */ = {isa = PBXFileReference; path = LICENSE; sourceTree = "<group>"; };
+		01F44882075D774B91D7C2A3 /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		0A3038D4B99AEF099576FD0B /* VendorConstants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VendorConstants.swift; sourceTree = "<group>"; };
 		0C95AD1ABB643EA342A39FDB /* sm3.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = sm3.h; sourceTree = "<group>"; };
 		0E26BA898827D154973154B3 /* SignerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignerTests.swift; sourceTree = "<group>"; };
@@ -76,7 +76,7 @@
 		D238AF3905F5297600B10E40 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		D3995B3B75444986CB0F6016 /* CENCResourceLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CENCResourceLoader.swift; sourceTree = "<group>"; };
 		D92AB9CE2D6C1647143E729D /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
-		E4BC9C973C1AA671D7737BE4 /* HongguoTV.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = HongguoTV.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E4BC9C973C1AA671D7737BE4 /* HongguoTV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HongguoTV.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E62EAA191BADEA70104A52D5 /* SM3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SM3.swift; sourceTree = "<group>"; };
 		E63697701D9B00A619152232 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		EA9C0734CF1BA31225859EA5 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -260,7 +260,6 @@
 			);
 			mainGroup = D3E47173783B87108DF6FD16;
 			minimizedProjectReferenceProxies = 1;
-			preferredProjectObjectVersion = 70;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -339,9 +338,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				HEADER_SEARCH_PATHS = (
-					"$(SRCROOT)/HongguoTV/Crypto/gmssl/include",
-				);
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/HongguoTV/Crypto/gmssl/include";
 				SDKROOT = appletvos;
 				SWIFT_ENABLE_BATCH_MODE = NO;
 				SWIFT_VERSION = 5.0;
@@ -352,6 +349,7 @@
 		6317A7EB359C7673CCE9D28F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = LH4AD7B7D6;
 				ENABLE_TESTABILITY = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = HongguoTV/Info.plist;
@@ -392,9 +390,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
-				HEADER_SEARCH_PATHS = (
-					"$(SRCROOT)/HongguoTV/Crypto/gmssl/include",
-				);
+				HEADER_SEARCH_PATHS = "$(SRCROOT)/HongguoTV/Crypto/gmssl/include";
 				SDKROOT = appletvos;
 				SWIFT_ENABLE_BATCH_MODE = NO;
 				SWIFT_VERSION = 5.0;
@@ -405,6 +401,7 @@
 		C6077B71BAD00BA992A9F02D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = LH4AD7B7D6;
 				ENABLE_TESTABILITY = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = HongguoTV/Info.plist;

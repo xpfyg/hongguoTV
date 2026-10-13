@@ -25,10 +25,16 @@ struct PlayerView: UIViewControllerRepresentable {
         context.coordinator.attachObserver()
     }
 
+    /// SwiftUI 视图从层级移除时兜底清理（覆盖非 AVPlayerViewController 路径的退出）
+    static func dismantleUIViewController(_ uiViewController: AVPlayerViewController, coordinator: Coordinator) {
+        coordinator.cleanup()
+    }
+
     final class Coordinator: NSObject, AVPlayerViewControllerDelegate {
         let parent: PlayerView
         weak var playerViewController: AVPlayerViewController?
         private var observer: Any?
+        private var exited = false
 
         init(_ parent: PlayerView) {
             self.parent = parent
@@ -52,12 +58,19 @@ struct PlayerView: UIViewControllerRepresentable {
             cleanup()
         }
 
-        private func cleanup() {
+        func cleanup() {
+            // 停止播放并释放资源：退出播放页后不得继续在后台播放/拉流
+            let player = playerViewController?.player
+            player?.pause()
+            player?.replaceCurrentItem(with: nil)
             if let observer {
-                playerViewController?.player?.removeTimeObserver(observer)
+                player?.removeTimeObserver(observer)
                 self.observer = nil
             }
-            parent.onExit()
+            if !exited {
+                exited = true
+                parent.onExit()
+            }
         }
     }
 }

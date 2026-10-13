@@ -313,6 +313,12 @@ struct NativePlayer: View {
             }
             player = p
         }
+        .onDisappear {
+            // 退出播放页时停止播放并释放流资源（防止返回后仍在后台播放）
+            player?.pause()
+            player?.replaceCurrentItem(with: nil)
+            player = nil
+        }
     }
 
     private func save(_ pos: Double, _ dur: Double, _ completed: Bool) {

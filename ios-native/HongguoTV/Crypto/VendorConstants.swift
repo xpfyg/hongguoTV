@@ -6,6 +6,24 @@ enum VendorConstants {
     static let videoUA = "com.phoenix.read/71332 (Linux; U; Android 16; zh_CN; 25053RT47C; Build/BP2A.250605.031.A3; Cronet/TTNetVersion:04657795 2026-01-23 QuicVersion:c67e9834 2025-09-08)"
     static let appUA = "com.phoenix.read/72232 (Linux; U; Android 16; zh_CN; 25053RT47C; Build/BP2A.250605.031.A3)"
 
+    /// 随机 19 位设备号（首位非 0），用于播放接口轮换绕过设备维度风控。
+    static func randomDeviceNumber() -> String {
+        var digits = String(Int.random(in: 1...9))
+        for _ in 0..<18 { digits += String(Int.random(in: 0...9)) }
+        return digits
+    }
+
+    /// 在全局设备指纹基础上替换 iid/device_id（其余保序不变）。
+    static func device(iid: String, deviceID: String) -> [(String, String)] {
+        device.map { pair in
+            switch pair.0 {
+            case "iid": return ("iid", iid)
+            case "device_id": return ("device_id", deviceID)
+            default: return pair
+            }
+        }
+    }
+
     /// 视频 App 设备指纹（查询串 + proto 共用）。数组保序，等价 Kotlin linkedMapOf。
     static let device: [(String, String)] = [
         ("iid", "1905892595382586"),

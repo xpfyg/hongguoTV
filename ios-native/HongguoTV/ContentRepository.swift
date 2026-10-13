@@ -402,11 +402,21 @@ final class ContentRepository {
             throw ContentError.format("剧集编号无效")
         }
         let payload = "{\"biz_param\":{\"detail_page_version\":0,\"device_level\":3,\"disable_digg_stat\":false,\"need_all_video_definition\":true,\"need_mp4_align\":false,\"use_os_player\":false,\"use_server_dns\":false,\"video_platform\":1024},\"mixed_video_id_map\":{\"1004\":[\"\(id)\"]}}"
-        let signed = signer.sign(base: "https://api5-normal-sinfonlineb.fqnovel.com/novel/player/multi_video_model/v1/", values: VendorConstants.device, body: [UInt8](payload.utf8))
+        // 播放接口按设备维度风控：固定 device_id 会被拒（Code 110001），每集请求轮换全新 iid/device_id 绕过。
+        let values = VendorConstants.device(iid: VendorConstants.randomDeviceNumber(), deviceID: VendorConstants.randomDeviceNumber())
+        let signed = signer.sign(base: "https://api5-normal-sinfonlineb.fqnovel.com/novel/player/multi_video_model/v1/", values: values, body: [UInt8](payload.utf8))
         let html = try await text(url: signed.url, signed: signed)
         let data = (try? JSONSerialization.jsonObject(with: Data(html.utf8)) as? [String: Any]) ?? [:]
         let code = (data["Code"] as? NSNumber)?.intValue ?? optInt(data, "code")
-        if code != 0 { throw ContentError.format("播放接口暂不可用") }
+        if code != 0 {
+            let message = str(data, "Message").isEmpty ? str(data, "message") : str(data, "Message")
+            let detail = message.isEmpty ? "（\(code)）" : "（\(code)：\(message)）"
+            // 110001 为字节系设备维度风控：固定 device 被标记时源站直接拒绝
+            if code == 110001 {
+                throw ContentError.format("播放源临时受限\(detail)，请稍后重试")
+            }
+            throw ContentError.format("播放接口暂不可用\(detail)")
+        }
         guard let map = data["data"] as? [String: Any] else { throw ContentError.format("播放信息为空") }
         let entry: [String: Any]
         if let e = map[id] as? [String: Any] { entry = e }
