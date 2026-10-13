@@ -38,9 +38,9 @@ struct DetailView: View {
             // 固定布局（当前剧集数 ≤ ~70 集一屏可容纳；超长选集后续改为局部滚动）
             VStack(alignment: .leading, spacing: 0) {
                 HStack(alignment: .top, spacing: 48) {
-                    // 左：竖版海报
+                    // 上：竖版海报
                     PosterImage(url: series.cover, corner: 20)
-                        .frame(width: 300, height: 450)
+                        .frame(width: 240, height: 360)
 
                         // 右：上为名称/简介/操作，下为选集
                         VStack(alignment: .leading, spacing: 0) {
@@ -58,7 +58,7 @@ struct DetailView: View {
                                 Text(series.description)
                                     .font(.system(size: 22))
                                     .foregroundStyle(Theme.textSecondary)
-                                    .lineLimit(4)
+                                    .lineLimit(3)
                                     .frame(maxWidth: 720, alignment: .leading)
 
                                 HStack(spacing: 20) {
@@ -94,31 +94,31 @@ struct DetailView: View {
                                         .padding(.top, 4)
                                 }
                             }
-
-                            // 右下：选集（延迟渲染，避免抢初始焦点导致页面自动滚动）
-                            VStack(alignment: .leading, spacing: 18) {
-                                if let detail, showEpisodes {
-                                    if !detail.episodes.isEmpty {
-                                        Text("选集")
-                                            .font(.system(size: 28, weight: .heavy))
-                                            .foregroundStyle(Theme.textPrimary)
-                                            .padding(.top, 36)
-                                        episodesGrid(detail.episodes)
-                                    }
-                                } else if busy {
-                                    ProgressView().scaleEffect(1.3)
-                                        .frame(maxWidth: .infinity, minHeight: 160)
-                                } else if let error {
-                                    Text(error).font(.system(size: 22)).foregroundStyle(Theme.accent)
-                                }
-                            }
-                            .frame(maxWidth: .infinity, alignment: .leading)
                         }
                     }
                     .padding(.top, 20)
+
+                    // 下：选集（整行排列）
+                    VStack(alignment: .leading, spacing: 18) {
+                        if let detail, showEpisodes {
+                            if !detail.episodes.isEmpty {
+                                Text("选集")
+                                    .font(.system(size: 28, weight: .heavy))
+                                    .foregroundStyle(Theme.textPrimary)
+                                episodesGrid(detail.episodes)
+                            }
+                        } else if busy {
+                            ProgressView().scaleEffect(1.3)
+                                .frame(maxWidth: .infinity, minHeight: 160)
+                        } else if let error {
+                            Text(error).font(.system(size: 22)).foregroundStyle(Theme.accent)
+                        }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.top, 28)
                 }
                 .padding(.horizontal, 72)
-                .padding(.bottom, 70)
+                .padding(.bottom, 40)
         }
         .task {
             await loadDetail()
