@@ -1,0 +1,339 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 70;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		15F1484CDC3EC960B99C6B70 /* LibraryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C142E890C3822E70C789A075 /* LibraryView.swift */; };
+		29C6FEBC79BC3161CD8534E4 /* HongguoTVApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E1A9EFA59597CDBEDB60E34 /* HongguoTVApp.swift */; };
+		61D09C4F970603F3FE10B672 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D238AF3905F5297600B10E40 /* HomeView.swift */; };
+		628DA491C6D887FC812921CB /* DetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52DBAF6E25F9E9D7ACCAD1FA /* DetailView.swift */; };
+		7005EF39708B68EA238308CF /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EA9C0734CF1BA31225859EA5 /* ContentView.swift */; };
+		858FDADE87A5F5C3C465C458 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C80C98A29D2E0598D496C8A /* SettingsView.swift */; };
+		91018AB3A40C769A5F70FF50 /* PlayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE59D34814341A3A6AE2B650 /* PlayerView.swift */; };
+		B4B40C91EFA775A7DF04A931 /* SearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D92AB9CE2D6C1647143E729D /* SearchView.swift */; };
+		BA62FB0B009DC1EDCB492542 /* AuthURLProtocol.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9986F8B909FB2FDAE0349FF0 /* AuthURLProtocol.swift */; };
+		BAA56531BC70FBB6BC8A8A38 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2B80E4C724DCDA3A02619D1 /* Theme.swift */; };
+		D033EF76EDEB347FC5C336D6 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = E63697701D9B00A619152232 /* Models.swift */; };
+		D9352D61C7DBDE699B59C875 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E507D65D93AF94CC7ED3910 /* APIClient.swift */; };
+		E215D78E45376DB782CA2EF0 /* LocalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 683EF6335AE45A56537595E9 /* LocalStore.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		4E507D65D93AF94CC7ED3910 /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		52DBAF6E25F9E9D7ACCAD1FA /* DetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DetailView.swift; sourceTree = "<group>"; };
+		683EF6335AE45A56537595E9 /* LocalStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalStore.swift; sourceTree = "<group>"; };
+		6C80C98A29D2E0598D496C8A /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		6E1A9EFA59597CDBEDB60E34 /* HongguoTVApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HongguoTVApp.swift; sourceTree = "<group>"; };
+		9986F8B909FB2FDAE0349FF0 /* AuthURLProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthURLProtocol.swift; sourceTree = "<group>"; };
+		BE59D34814341A3A6AE2B650 /* PlayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerView.swift; sourceTree = "<group>"; };
+		C142E890C3822E70C789A075 /* LibraryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibraryView.swift; sourceTree = "<group>"; };
+		D238AF3905F5297600B10E40 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		D92AB9CE2D6C1647143E729D /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
+		E4BC9C973C1AA671D7737BE4 /* HongguoTV.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = HongguoTV.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E63697701D9B00A619152232 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		EA9C0734CF1BA31225859EA5 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		F2B80E4C724DCDA3A02619D1 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		D3E47173783B87108DF6FD16 = {
+			isa = PBXGroup;
+			children = (
+				FD03DBEF72DCF3DDCED7DD09 /* HongguoTV */,
+				FAD5C1023356503ED5CCB212 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		FAD5C1023356503ED5CCB212 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				E4BC9C973C1AA671D7737BE4 /* HongguoTV.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		FD03DBEF72DCF3DDCED7DD09 /* HongguoTV */ = {
+			isa = PBXGroup;
+			children = (
+				4E507D65D93AF94CC7ED3910 /* APIClient.swift */,
+				9986F8B909FB2FDAE0349FF0 /* AuthURLProtocol.swift */,
+				EA9C0734CF1BA31225859EA5 /* ContentView.swift */,
+				52DBAF6E25F9E9D7ACCAD1FA /* DetailView.swift */,
+				D238AF3905F5297600B10E40 /* HomeView.swift */,
+				6E1A9EFA59597CDBEDB60E34 /* HongguoTVApp.swift */,
+				C142E890C3822E70C789A075 /* LibraryView.swift */,
+				683EF6335AE45A56537595E9 /* LocalStore.swift */,
+				E63697701D9B00A619152232 /* Models.swift */,
+				BE59D34814341A3A6AE2B650 /* PlayerView.swift */,
+				D92AB9CE2D6C1647143E729D /* SearchView.swift */,
+				6C80C98A29D2E0598D496C8A /* SettingsView.swift */,
+				F2B80E4C724DCDA3A02619D1 /* Theme.swift */,
+			);
+			path = HongguoTV;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		CDB3EE0069AC639BF131954E /* HongguoTV */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 87AB1174F4EC5272136CEF0B /* Build configuration list for PBXNativeTarget "HongguoTV" */;
+			buildPhases = (
+				98AB83B807E51EFA00AEFBA0 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = HongguoTV;
+			packageProductDependencies = (
+			);
+			productName = HongguoTV;
+			productReference = E4BC9C973C1AA671D7737BE4 /* HongguoTV.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		E70FEB88707840A5C7353161 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					CDB3EE0069AC639BF131954E = {
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = B44C64B1A84A24B4D438F723 /* Build configuration list for PBXProject "HongguoTV" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = D3E47173783B87108DF6FD16;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 70;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				CDB3EE0069AC639BF131954E /* HongguoTV */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		98AB83B807E51EFA00AEFBA0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D9352D61C7DBDE699B59C875 /* APIClient.swift in Sources */,
+				BA62FB0B009DC1EDCB492542 /* AuthURLProtocol.swift in Sources */,
+				7005EF39708B68EA238308CF /* ContentView.swift in Sources */,
+				628DA491C6D887FC812921CB /* DetailView.swift in Sources */,
+				61D09C4F970603F3FE10B672 /* HomeView.swift in Sources */,
+				29C6FEBC79BC3161CD8534E4 /* HongguoTVApp.swift in Sources */,
+				15F1484CDC3EC960B99C6B70 /* LibraryView.swift in Sources */,
+				E215D78E45376DB782CA2EF0 /* LocalStore.swift in Sources */,
+				D033EF76EDEB347FC5C336D6 /* Models.swift in Sources */,
+				91018AB3A40C769A5F70FF50 /* PlayerView.swift in Sources */,
+				B4B40C91EFA775A7DF04A931 /* SearchView.swift in Sources */,
+				858FDADE87A5F5C3C465C458 /* SettingsView.swift in Sources */,
+				BAA56531BC70FBB6BC8A8A38 /* Theme.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		2A9E2848B93C256B2C888ADD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_ENABLE_BATCH_MODE = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TVOS_DEPLOYMENT_TARGET = 17.0;
+			};
+			name = Release;
+		};
+		6317A7EB359C7673CCE9D28F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = HongguoTV/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.hongguotv.tvos;
+				SDKROOT = appletvos;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 17.0;
+			};
+			name = Release;
+		};
+		A1E7BAD772816F864E7D6A83 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = appletvos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_ENABLE_BATCH_MODE = NO;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TVOS_DEPLOYMENT_TARGET = 17.0;
+			};
+			name = Debug;
+		};
+		C6077B71BAD00BA992A9F02D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = "App Icon & Top Shelf Image";
+				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = HongguoTV/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.hongguotv.tvos;
+				SDKROOT = appletvos;
+				TARGETED_DEVICE_FAMILY = 3;
+				TVOS_DEPLOYMENT_TARGET = 17.0;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		87AB1174F4EC5272136CEF0B /* Build configuration list for PBXNativeTarget "HongguoTV" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C6077B71BAD00BA992A9F02D /* Debug */,
+				6317A7EB359C7673CCE9D28F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		B44C64B1A84A24B4D438F723 /* Build configuration list for PBXProject "HongguoTV" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1E7BAD772816F864E7D6A83 /* Debug */,
+				2A9E2848B93C256B2C888ADD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = E70FEB88707840A5C7353161 /* Project object */;
+}

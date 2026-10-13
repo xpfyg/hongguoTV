@@ -1,0 +1,25 @@
+name: HongguoTV
+options:
+  bundleIdPrefix: com.hongguotv
+  deploymentTarget:
+    tvOS: "17.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "5.0"
+    CODE_SIGN_STYLE: Automatic
+    SWIFT_ENABLE_BATCH_MODE: NO
+targets:
+  HongguoTV:
+    type: application
+    platform: tvOS
+    sources:
+      - path: HongguoTV
+        excludes:
+          - Info.plist
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.hongguotv.tvos
+        TVOS_DEPLOYMENT_TARGET: "17.0"
+        INFOPLIST_FILE: HongguoTV/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
