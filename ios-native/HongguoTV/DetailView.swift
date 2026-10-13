@@ -4,7 +4,6 @@ import AVKit
 // MARK: - 详情页（Infuse 风格：背景海报模糊 + 前景信息 + 选集）
 
 struct DetailView: View {
-    @EnvironmentObject private var store: LocalStore
     @Environment(\.dismiss) private var dismiss
     let series: Series
 
@@ -18,14 +17,16 @@ struct DetailView: View {
     @State private var playbackError: String?
     @State private var showEpisodes = false
     @State private var selectedActor: Celebrity?
+    // SwiftData 接入：收藏状态 / 续播集 / 已看分集
+    @State private var favorite = false
+    @State private var resumeEpisodeId: String?
+    @State private var watchedIds: Set<String> = []
     @FocusState private var playFocused: Bool
 
     init(series: Series) {
         self.series = series
         _current = State(initialValue: series)
     }
-
-    private var resume: Progress? { store.progress(for: current.id) }
 
     var body: some View {
         ZStack {
@@ -70,14 +71,14 @@ struct DetailView: View {
 
                                 HStack(spacing: 20) {
                                     Button {
-                                        play(resume?.episodeId, fresh: false)
+                                        play(resumeEpisodeId, fresh: false)
                                     } label: {
-                                        Label(resume != nil ? "继续播放" : "播放", systemImage: "play.fill")
+                                        Label(resumeEpisodeId != nil ? "继续播放" : "播放", systemImage: "play.fill")
                                     }
                                     .primaryAction()
                                     .focused($playFocused)
 
-                                    if resume != nil {
+                                    if resumeEpisodeId != nil {
                                         Button { play(nil, fresh: true) } label: {
                                             Label("从头播放", systemImage: "arrow.counterclockwise")
                                         }
@@ -85,9 +86,9 @@ struct DetailView: View {
                                     }
 
                                     Button {
-                                        store.toggleFavorite(series)
+                                        toggleFavorite()
                                     } label: {
-                                        Label(store.isFavorite(series.id) ? "已收藏" : "收藏", systemImage: "star.fill")
+                                        Label(favorite ? "已收藏" : "收藏", systemImage: "star.fill")
                                     }
                                     .glassAction()
                                 }
@@ -196,6 +197,7 @@ struct DetailView: View {
             }
         .task(id: current.id) {
             await loadDetail()
+            await loadLocalState()
             try? await Task.sleep(nanoseconds: 350_000_000)
             playFocused = true
             try? await Task.sleep(nanoseconds: 150_000_000)
@@ -224,11 +226,27 @@ struct DetailView: View {
     private func episodesGrid(_ eps: [Episode]) -> some View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 104), spacing: 16)], spacing: 16) {
             ForEach(eps) { ep in
-                EpisodeCell(ep: ep, isResume: resume?.episodeId == ep.id) {
+                EpisodeCell(ep: ep,
+                            isResume: resumeEpisodeId == ep.id,
+                            isWatched: watchedIds.contains(ep.id)) {
                     play(ep.id, fresh: false)
                 }
             }
         }
+    }
+
+    // MARK: - SwiftData 本地状态
+
+    private func loadLocalState() async {
+        let api = ContentClient()
+        favorite = await api.cache.isFavorite(seriesId: current.id)
+        resumeEpisodeId = await api.cache.resume(for: current.id)?.episodeId
+        watchedIds = await api.cache.watchedEpisodeIds(seriesId: current.id)
+    }
+
+    private func toggleFavorite() {
+        let api = ContentClient()
+        favorite = api.cache.toggleFavorite(current)
     }
 
     private func loadDetail() async {
@@ -278,7 +296,6 @@ struct NativePlayer: View {
     let playback: PlaybackInfo
     let series: Series
     let episode: Episode
-    @EnvironmentObject private var store: LocalStore
     @Environment(\.dismiss) private var dismiss
 
     @State private var player: AVPlayer?
@@ -304,9 +321,10 @@ struct NativePlayer: View {
             asset.resourceLoader.setDelegate(CENCResourceLoader.shared, queue: .global(qos: .userInitiated))
             let item = AVPlayerItem(asset: asset)
             let p = AVPlayer(playerItem: item)
-            if let resume = store.progress(for: series.id),
-               resume.episodeId == episode.id, resume.position > 0, !resume.completed {
-                item.seek(to: CMTime(seconds: resume.position, preferredTimescale: 600),
+            let api = ContentClient()
+            let resumePosition = api.cache.resume(for: series.id).flatMap { $0.episodeId == episode.id ? $0.position : nil }
+            if let pos = resumePosition, pos > 0 {
+                item.seek(to: CMTime(seconds: pos, preferredTimescale: 600),
                           completionHandler: { _ in p.play() })
             } else {
                 p.play()
@@ -322,16 +340,19 @@ struct NativePlayer: View {
     }
 
     private func save(_ pos: Double, _ dur: Double, _ completed: Bool) {
-        var p = Progress(series: series,
-                         episodeId: episode.id,
-                         episodeNumber: episode.number,
-                         position: pos,
-                         duration: dur,
-                         completed: completed,
-                         updatedAt: Date().timeIntervalSince1970)
         // 接近结尾视为看完，位置归零便于下次从头播
-        if completed { p.position = 0 }
-        store.updateProgress(p)
+        let finalPosition = completed ? 0 : pos
+        let api = ContentClient()
+        api.cache.markWatched(
+            seriesId: series.id,
+            episodeId: episode.id,
+            episodeNumber: episode.number,
+            seriesTitle: series.title,
+            episodeTitle: episode.title,
+            position: finalPosition,
+            duration: dur,
+            completed: completed
+        )
     }
 }
 
@@ -340,6 +361,7 @@ struct NativePlayer: View {
 struct EpisodeCell: View {
     let ep: Episode
     let isResume: Bool
+    let isWatched: Bool
     let onPlay: () -> Void
     @Environment(\.isFocused) private var focused
 
@@ -348,8 +370,17 @@ struct EpisodeCell: View {
             onPlay()
         } label: {
             VStack(spacing: 6) {
-                Text("\(ep.number)")
-                    .font(.system(size: 22, weight: .bold))
+                ZStack(alignment: .topTrailing) {
+                    Text("\(ep.number)")
+                        .font(.system(size: 22, weight: .bold))
+                        .opacity(isWatched ? 0.55 : 1)
+                    if isWatched {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 14))
+                            .foregroundStyle(Theme.accent)
+                            .padding(6)
+                    }
+                }
                 if !ep.title.isEmpty {
                     Text(ep.title)
                         .font(.system(size: 15))
@@ -376,7 +407,6 @@ struct ActorWorksView: View {
     let actor: Celebrity
     let onClose: () -> Void
     let onOpenSeries: (Series) -> Void
-    @EnvironmentObject private var store: LocalStore
 
     @State private var profile: ActorProfile?
     @State private var items: [Series] = []

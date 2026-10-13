@@ -65,6 +65,8 @@ final class ContentRepository {
     private let signer = Signer()
     private let session: URLSession
     private let clock: () -> UInt64
+    /// SwiftData 缓存门面（可选注入；UI 路径经 ContentClient 传入 .shared）
+    private let cache: CacheStore?
 
     private struct SearchCursor {
         let searchId: String
@@ -75,11 +77,12 @@ final class ContentRepository {
     private var searchCursors: [String: SearchCursor] = [:]
     private let cursorLock = NSLock()
 
-    init(session: URLSession? = nil, clock: @escaping () -> UInt64 = { UInt64(Date().timeIntervalSince1970 * 1000) }) {
+    init(session: URLSession? = nil, cache: CacheStore? = nil, clock: @escaping () -> UInt64 = { UInt64(Date().timeIntervalSince1970 * 1000) }) {
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 30
         config.timeoutIntervalForResource = 45
         self.session = session ?? URLSession(configuration: config)
+        self.cache = cache
         self.clock = clock
     }
 
@@ -148,6 +151,9 @@ final class ContentRepository {
 
     func home(page: Int = 1) async throws -> CatalogPage {
         guard page >= 1 && page <= 100 else { throw ContentError.format("页码无效") }
+        if page == 1, let cached = await cache?.cachedList(kind: "home", scope: "all", page: 1) {
+            return CatalogPage(items: cached, hasMore: true)
+        }
         let data = try await router("\(site)/")
         guard let homeSections = (data["page"] as? [String: Any])?["homeSections"] as? [Any] else {
             throw ContentError.format("首页数据不可用")
@@ -156,7 +162,9 @@ final class ContentRepository {
               let videoList = section["video_list"] as? [Any] else {
             throw ContentError.format("首页分类数据不可用")
         }
-        let items = valid(videoList.compactMap { ($0 as? [String: Any]).map(card) })
+        let rows = videoList.compactMap { $0 as? [String: Any] }
+        let items = valid(rows.map(card))
+        await cache?.saveList(kind: "home", scope: "all", page: page, items: items, categoriesBySeriesId: categoriesBySeries(from: rows))
         return CatalogPage(items: items, hasMore: !items.isEmpty && page < 100)
     }
 
@@ -171,9 +179,45 @@ final class ContentRepository {
         "rank_ai": ("AI剧热播榜", "rank", "hot-ai-drama"),
     ]
 
-    func category(typeId: String, page: Int = 1) async throws -> (name: String, items: [Series]) {
+    /// 二级小分类表（与 server/provider.mjs 的 SUB_CATEGORY_CONFIG 对齐，直连官网时静态提供）
+    private static let subCategoriesByRoute: [String: [SubCategory]] = [
+        "real-drama": [
+            .init(slug: "romance", name: "爱情"), .init(slug: "period", name: "年代"),
+            .init(slug: "comeback", name: "逆袭"), .init(slug: "legend", name: "传奇"),
+            .init(slug: "growth", name: "成长"), .init(slug: "family", name: "家庭"),
+            .init(slug: "clan", name: "家族"), .init(slug: "cute-kids", name: "萌宝"),
+            .init(slug: "suspense", name: "悬疑"), .init(slug: "thriller", name: "惊悚"),
+            .init(slug: "horror", name: "恐怖"), .init(slug: "supernatural", name: "志怪"),
+            .init(slug: "costume", name: "古装"), .init(slug: "fantasy", name: "玄幻"),
+            .init(slug: "wonder", name: "奇幻"), .init(slug: "urban", name: "都市"),
+            .init(slug: "youth", name: "青春"), .init(slug: "comedy", name: "喜剧"),
+            .init(slug: "sci-fi", name: "科幻"), .init(slug: "disaster", name: "灾难"),
+            .init(slug: "action-adventure", name: "动作冒险"), .init(slug: "war", name: "战争"),
+            .init(slug: "variety", name: "综艺"), .init(slug: "drama", name: "剧情"),
+        ],
+        "comic-drama": [
+            .init(slug: "creative", name: "脑洞"), .init(slug: "fantasy", name: "玄幻"),
+            .init(slug: "drama", name: "剧情"), .init(slug: "apocalypse", name: "末世"),
+            .init(slug: "wealthy-family", name: "豪门"), .init(slug: "wonder", name: "奇幻"),
+            .init(slug: "sci-fi", name: "科幻"), .init(slug: "adventure", name: "冒险"),
+        ],
+        "ai-drama": [
+            .init(slug: "creative", name: "脑洞"), .init(slug: "fantasy", name: "玄幻"),
+            .init(slug: "drama", name: "剧情"), .init(slug: "apocalypse", name: "末世"),
+            .init(slug: "wealthy-family", name: "豪门"), .init(slug: "wonder", name: "奇幻"),
+            .init(slug: "sci-fi", name: "科幻"), .init(slug: "adventure", name: "冒险"),
+        ],
+    ]
+
+    func category(typeId: String, slug: String? = nil, page: Int = 1) async throws -> (name: String, subCategories: [SubCategory], items: [Series]) {
         guard let config = Self.categoryConfig[typeId] else { throw ContentError.format("不支持的分类") }
+        let scope = slug.map { "\(typeId)/\($0)" } ?? typeId
+        let subCategories = config.kind == "category" ? (Self.subCategoriesByRoute[config.route] ?? []) : []
+        if let cached = await cache?.cachedList(kind: "category", scope: scope, page: page) {
+            return (config.name, subCategories, cached)
+        }
         let items: [Series]
+        var categoryMap: [String: [[String: String]]] = [:]
         switch config.kind {
         case "home":
             let data = try await router("\(site)/")
@@ -182,16 +226,22 @@ final class ContentRepository {
                   let videoList = section["video_list"] as? [Any] else {
                 throw ContentError.format("首页分类数据不可用")
             }
-            items = valid(videoList.compactMap { ($0 as? [String: Any]).map(card) })
+            let rows = videoList.compactMap { $0 as? [String: Any] }
+            items = valid(rows.map(card))
+            categoryMap = categoriesBySeries(from: rows)
         case "category":
-            let data = try await router("\(site)/category/\(config.route)\(page > 1 ? "?page=\(page)" : "")")
+            let path = slug.map { "\(config.route)/\($0)" } ?? config.route
+            let data = try await router("\(site)/category/\(path)\(page > 1 ? "?page=\(page)" : "")")
             let pageData = (data["category_$"] as? [String: Any]) ?? (data["category_page"] as? [String: Any])
             guard let recommendList = pageData?["recommendList"] as? [Any] else { throw ContentError.format("分类数据不可用") }
-            items = valid(recommendList.compactMap { ($0 as? [String: Any]).map(card) })
+            let rows = recommendList.compactMap { $0 as? [String: Any] }
+            items = valid(rows.map(card))
+            categoryMap = categoriesBySeries(from: rows)
         default:
             items = try await rankPage(route: config.route, page: page)
         }
-        return (config.name, items)
+        await cache?.saveList(kind: "category", scope: scope, page: page, items: items, categoriesBySeriesId: categoryMap)
+        return (config.name, subCategories, items)
     }
 
     /// 官网榜单：HTML 内嵌 data-fn-args（可能被壳页面降级，最多重试 3 次）
@@ -245,10 +295,16 @@ final class ContentRepository {
         guard !keyword.isEmpty, keyword.count <= 80, page >= 1 && page <= 100 else {
             throw ContentError.format("搜索参数无效")
         }
+        if let cached = await cache?.cachedList(kind: "search", scope: keyword, page: page) {
+            return CatalogPage(items: cached, hasMore: page < 100)
+        }
         // App 搜索优先（短剧）；官网搜索不约束内容类型，漫剧不可用它
         do {
             let result = try await appSearch(keyword: keyword, page: page, type: .short)
-            if !result.items.isEmpty || !result.hasMore { return result }
+            if !result.items.isEmpty || !result.hasMore {
+                await cache?.saveList(kind: "search", scope: keyword, page: page, items: result.items)
+                return result
+            }
         } catch let e as ContentError where e == .sessionExpired {
             throw e
         } catch {
@@ -257,7 +313,9 @@ final class ContentRepository {
         let data = try await router("\(site)/search/\(Signer.urlEncode(keyword))?page=\(page)")
         let pageData = (data["search_(keyword)/page"] as? [String: Any]) ?? (data["search_page"] as? [String: Any])
         guard let rows = pageData?["searchList"] as? [Any] else { throw ContentError.format("搜索数据暂不可用") }
-        let items = valid(rows.compactMap { ($0 as? [String: Any]).map(card) })
+        let rawRows = rows.compactMap { $0 as? [String: Any] }
+        let items = valid(rawRows.map(card))
+        await cache?.saveList(kind: "search", scope: keyword, page: page, items: items, categoriesBySeriesId: categoriesBySeries(from: rawRows))
         return CatalogPage(items: items, hasMore: !items.isEmpty && page < 100)
     }
 
@@ -337,6 +395,10 @@ final class ContentRepository {
 
     /// 演职人员搜索：官网搜索页解析演员档案（doc_type=46）与参演剧集
     func actorSearch(keyword: String, page: Int = 1) async throws -> (actor: ActorProfile?, items: [Series]) {
+        if let cached = await cache?.cachedList(kind: "actor", scope: keyword, page: page) {
+            let profile = await cache?.cachedActorProfile(name: keyword)
+            return (profile, cached)
+        }
         let data = try await router("\(site)/search/\(Signer.urlEncode(keyword))?page=\(page)")
         let pageData = (data["search_(keyword)/page"] as? [String: Any]) ?? (data["search_page"] as? [String: Any])
         guard let rows = pageData?["searchList"] as? [Any] else { throw ContentError.format("搜索数据不可用") }
@@ -355,11 +417,17 @@ final class ContentRepository {
         }
         let works = (actorEntry?["video_list"] as? [Any]) ?? []
         let items: [Series]
+        var categoryMap: [String: [[String: String]]] = [:]
         if actor != nil && !works.isEmpty {
-            items = valid(works.compactMap { ($0 as? [String: Any]).map(card) })
+            let workRows = works.compactMap { $0 as? [String: Any] }
+            items = valid(workRows.map(card))
+            categoryMap = categoriesBySeries(from: workRows)
         } else {
             items = valid(entries.map(card))
+            categoryMap = categoriesBySeries(from: entries)
         }
+        await cache?.saveList(kind: "actor", scope: keyword, page: page, items: items, categoriesBySeriesId: categoryMap)
+        if let actor { await cache?.saveActorProfile(actor) }
         return (actor, items)
     }
 
@@ -368,6 +436,9 @@ final class ContentRepository {
     func detail(id: String) async throws -> Detail {
         guard id.range(of: "^[0-9]{1,30}$", options: .regularExpression) != nil else {
             throw ContentError.format("剧集编号无效")
+        }
+        if let cached = await cache?.cachedDetail(id: id) {
+            return cached
         }
         let data = try await router("\(site)/detail?series_id=\(id)")
         guard let page = data["detail_page"] as? [String: Any],
@@ -383,7 +454,7 @@ final class ContentRepository {
             throw ContentError.format("分集数据异常")
         }
         let base = card(series)
-        return Detail(
+        let detail = Detail(
             id: id,
             title: base.title,
             cover: base.cover,
@@ -393,6 +464,8 @@ final class ContentRepository {
             celebrities: normalizeCelebrities(series["celebrities"]),
             episodes: episodes
         )
+        await cache?.saveDetail(detail)
+        return detail
     }
 
     // MARK: - 播放流
@@ -473,6 +546,26 @@ final class ContentRepository {
     }
 
     // MARK: - 演职人员规范化
+
+    /// 从列表卡片原始数据提取每剧的小分类（category_list → [[id,name]]），供 SwiftData 分类搜索
+    private func categoriesBySeries(from rows: [[String: Any]]) -> [String: [[String: String]]] {
+        var result: [String: [[String: String]]] = [:]
+        for row in rows {
+            let o = (row["video_data"] as? [String: Any]) ?? row
+            let id = str(o, "series_id")
+            guard !id.isEmpty else { continue }
+            let tags = (o["category_list"] as? [Any]) ?? []
+            let mapped = tags.compactMap { tag -> [String: String]? in
+                guard let d = tag as? [String: Any] else { return nil }
+                let cid = str(d, "category_id")
+                let name = str(d, "name")
+                guard !cid.isEmpty || !name.isEmpty else { return nil }
+                return ["id": cid, "name": name]
+            }
+            if !mapped.isEmpty { result[id] = mapped }
+        }
+        return result
+    }
 
     private func normalizeCelebrities(_ value: Any?) -> [Celebrity] {
         guard let value = value else { return [] }

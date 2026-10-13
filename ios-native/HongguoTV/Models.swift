@@ -11,6 +11,13 @@ struct Series: Codable, Identifiable, Hashable {
     let tags: String
 }
 
+/// 二级小分类（官网分类页 tab：slug + 中文名），如 romance=爱情、costume=古装
+struct SubCategory: Identifiable, Hashable {
+    let slug: String
+    let name: String
+    var id: String { slug }
+}
+
 struct Episode: Codable, Identifiable, Hashable {
     let id: String
     let number: Int

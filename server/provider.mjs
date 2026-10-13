@@ -99,6 +99,31 @@ const CATEGORY_CONFIG = {
   rank_comic: { name: "漫剧热播榜", kind: "rank", route: "hot-comic-drama" },
   rank_ai: { name: "AI剧热播榜", kind: "rank", route: "hot-ai-drama" },
 };
+// 官网分类页二级小分类（slug → 中文名），来自 /category/{route} 页面的分类 tab 实测提取。
+const SUB_CATEGORY_CONFIG = {
+  "real-drama": [
+    ["romance", "爱情"], ["period", "年代"], ["comeback", "逆袭"], ["legend", "传奇"],
+    ["growth", "成长"], ["family", "家庭"], ["clan", "家族"], ["cute-kids", "萌宝"],
+    ["suspense", "悬疑"], ["thriller", "惊悚"], ["horror", "恐怖"], ["supernatural", "志怪"],
+    ["costume", "古装"], ["fantasy", "玄幻"], ["wonder", "奇幻"], ["urban", "都市"],
+    ["youth", "青春"], ["comedy", "喜剧"], ["sci-fi", "科幻"], ["disaster", "灾难"],
+    ["action-adventure", "动作冒险"], ["war", "战争"], ["variety", "综艺"], ["drama", "剧情"],
+  ],
+  "comic-drama": [
+    ["creative", "脑洞"], ["fantasy", "玄幻"], ["drama", "剧情"], ["apocalypse", "末世"],
+    ["wealthy-family", "豪门"], ["wonder", "奇幻"], ["sci-fi", "科幻"], ["adventure", "冒险"],
+  ],
+  "ai-drama": [
+    ["creative", "脑洞"], ["fantasy", "玄幻"], ["drama", "剧情"], ["apocalypse", "末世"],
+    ["wealthy-family", "豪门"], ["wonder", "奇幻"], ["sci-fi", "科幻"], ["adventure", "冒险"],
+  ],
+};
+const SUB_CATEGORY_KEYS = new Map(
+  Object.entries(SUB_CATEGORY_CONFIG).flatMap(([route, list]) =>
+    list.map(([slug, name]) => [`${route}/${slug}`, name])
+  )
+);
+export const SUB_CATEGORY_KEYS_SET = SUB_CATEGORY_KEYS;
 const RANK_ROUTE_RE = /^(hot-drama|hot-real-drama|hot-comic-drama|hot-ai-drama)$/;
 export const CATEGORY_IDS = Object.keys(CATEGORY_CONFIG);
 const UA =
@@ -113,10 +138,11 @@ async function homeTab(tab) {
     throw new Error("首页分类数据不可用");
   return cards(section.video_list.map(api.itemToCard));
 }
-// 官网分类页 /category/{real-drama|comic-drama|ai-drama}。
-async function browseCategory(route, page = 1) {
+// 官网分类页 /category/{real-drama|comic-drama|ai-drama}[/{小分类 slug}]。
+async function browseCategory(route, page = 1, slug) {
+  const path = slug ? `${route}/${slug}` : route;
   const data = await api.routerData(
-    `${SITE}/category/${route}${page > 1 ? `?page=${page}` : ""}`
+    `${SITE}/category/${path}${page > 1 ? `?page=${page}` : ""}`
   );
   const pageData =
     data?.loaderData?.category_$ || data?.loaderData?.category_page;
@@ -184,14 +210,34 @@ export const provider = {
   async home(page = 1) {
     return { items: await homeTab("all"), page };
   },
-  async category(typeId, page = 1) {
+  async category(typeId, page = 1, slug) {
     const config = CATEGORY_CONFIG[typeId];
     if (!config) throw new Error("不支持的分类");
     const base = { type_id: typeId, type_name: config.name };
+    // 二级小分类：仅分类页（真人/漫剧/AI 剧）有；slug 需存在于对应路由的小分类表
+    if (config.kind === "category") {
+      const subCategories = (SUB_CATEGORY_CONFIG[config.route] || []).map(
+        ([subSlug, name]) => ({ slug: subSlug, name })
+      );
+      if (slug) {
+        if (!SUB_CATEGORY_KEYS.has(`${config.route}/${slug}`))
+          throw new Error("不支持的小分类");
+        return {
+          ...base,
+          sub_categories: subCategories,
+          items: (await browseCategory(config.route, page, slug)).items,
+          page,
+        };
+      }
+      return {
+        ...base,
+        sub_categories: subCategories,
+        items: (await browseCategory(config.route, page)).items,
+        page,
+      };
+    }
     if (config.kind === "home")
       return { ...base, items: await homeTab(config.tab), page: 1 };
-    if (config.kind === "category")
-      return { ...base, items: (await browseCategory(config.route, page)).items, page };
     return { ...base, items: (await rankPage(config.route, page)).items, page };
   },
   async search(keyword, page = 1) {

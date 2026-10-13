@@ -1,6 +1,9 @@
 import http from "node:http";
 import { timingSafeEqual } from "node:crypto";
-import { CATEGORY_IDS } from "./provider.mjs";
+import {
+  CATEGORY_IDS,
+  SUB_CATEGORY_KEYS_SET,
+} from "./provider.mjs";
 
 export function byteRange(value, total) {
   if (!value) return [0, total - 1];
@@ -85,6 +88,29 @@ export function createServer(provider, token = "") {
         if (!Number.isInteger(page) || page < 1 || page > 100)
           return json(400, { error: "分页参数无效" });
         return json(200, await provider.category(category[1], page));
+      }
+      // 小分类：/api/category/{typeId}/{slug}（仅真人/漫剧/AI 剧分类存在小分类）
+      const subCategory = /^\/api\/category\/([a-z_]+)\/([a-z0-9-]+)$/.exec(
+        url.pathname
+      );
+      if (subCategory) {
+        if (!CATEGORY_IDS.includes(subCategory[1]))
+          return json(400, { error: "不支持的分类" });
+        const route = {
+          human: "real-drama",
+          comic: "comic-drama",
+          ai: "ai-drama",
+        }[subCategory[1]];
+        // 小分类仅真人/漫剧/AI 剧分类页存在；slug 非法直接 400，避免落到内容源再报错
+        if (!route || !SUB_CATEGORY_KEYS_SET.has(`${route}/${subCategory[2]}`))
+          return json(400, { error: "不支持的小分类" });
+        const page = Number(url.searchParams.get("page") || 1);
+        if (!Number.isInteger(page) || page < 1 || page > 100)
+          return json(400, { error: "分页参数无效" });
+        return json(
+          200,
+          await provider.category(subCategory[1], page, subCategory[2])
+        );
       }
       const detail = /^\/api\/series\/(\d{1,30})$/.exec(url.pathname);
       if (detail) return json(200, await provider.detail(detail[1]));

@@ -116,6 +116,39 @@ test("category endpoint validates type ids and pages, then forwards to provider"
   assert.equal((await fetch(url + "/api/category/human?page=0")).status, 400);
   assert.equal((await fetch(url + "/api/category/human?page=101")).status, 400);
 });
+test("sub-category endpoint forwards typeId + slug to provider", async (t) => {
+  const seen = [];
+  const url = await fixture(t, {
+    category: async (typeId, page, slug) => {
+      seen.push([typeId, page, slug]);
+      return {
+        type_id: typeId,
+        type_name: "真人剧",
+        sub_categories: [{ slug: "romance", name: "爱情" }],
+        items: [{ id: "2", title: "爱情短剧" }],
+        page,
+      };
+    },
+  });
+  const res = await fetch(url + "/api/category/human/romance?page=3");
+  assert.equal(res.status, 200);
+  assert.deepEqual(await res.json(), {
+    type_id: "human",
+    type_name: "真人剧",
+    sub_categories: [{ slug: "romance", name: "爱情" }],
+    items: [{ id: "2", title: "爱情短剧" }],
+    page: 3,
+  });
+  assert.deepEqual(seen, [["human", 3, "romance"]]);
+  // slug 含非法字符 / 未知分类的校验
+  assert.equal(
+    (await fetch(url + "/api/category/human/romance!!")).status,
+    404
+  );
+  assert.equal((await fetch(url + "/api/category/unknown/romance")).status, 400);
+  assert.equal((await fetch(url + "/api/category/human/nonexistent")).status, 400);
+  assert.equal((await fetch(url + "/api/category/human/romance?page=abc")).status, 400);
+});
 test("actor-search endpoint validates query and forwards to provider", async (t) => {
   const seen = [];
   const url = await fixture(t, {

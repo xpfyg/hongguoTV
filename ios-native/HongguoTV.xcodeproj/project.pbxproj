@@ -36,6 +36,8 @@
 		ECB55AFFC49F3500985F9CBF /* RemoteVideo.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9205B8369A1B273521F155EB /* RemoteVideo.swift */; };
 		F1951E0EB5F8135E1C9A4443 /* AesV3.swift in Sources */ = {isa = PBXBuildFile; fileRef = 885B40B8342442E7DDA71885 /* AesV3.swift */; };
 		FF120DBA0240DADA7BFC3972 /* Signer.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC97AEE4E0967807CC85B53D /* Signer.swift */; };
+		34C6033BFBB0453902E1EA1F /* CacheStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E60093B302F678601FDFA6C6 /* CacheStore.swift */; };
+		6A8A676623D5ADC386592820 /* SwiftDataModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3671A48ECDB72BF0FFDB8C4 /* SwiftDataModels.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -85,6 +87,8 @@
 		F178DAC8FB2F3D2FAB65BC3E /* SM3Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SM3Tests.swift; sourceTree = "<group>"; };
 		F2B80E4C724DCDA3A02619D1 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		F5FC411DBC69BD8F8BADCDE1 /* ContentClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentClient.swift; sourceTree = "<group>"; };
+		E60093B302F678601FDFA6C6 /* CacheStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CacheStore.swift; sourceTree = "<group>"; };
+		C3671A48ECDB72BF0FFDB8C4 /* SwiftDataModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDataModels.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -176,6 +180,8 @@
 				9986F8B909FB2FDAE0349FF0 /* AuthURLProtocol.swift */,
 				D3995B3B75444986CB0F6016 /* CENCResourceLoader.swift */,
 				F5FC411DBC69BD8F8BADCDE1 /* ContentClient.swift */,
+				E60093B302F678601FDFA6C6 /* CacheStore.swift */,
+				C3671A48ECDB72BF0FFDB8C4 /* SwiftDataModels.swift */,
 				43E2B51D41E5465CAF8F1682 /* ContentRepository.swift */,
 				EA9C0734CF1BA31225859EA5 /* ContentView.swift */,
 				52DBAF6E25F9E9D7ACCAD1FA /* DetailView.swift */,
@@ -291,6 +297,8 @@
 				0EF817C7C8DADE74CD3C0D32 /* Bytes.swift in Sources */,
 				6A97C4080A92B7B572F81649 /* CENCResourceLoader.swift in Sources */,
 				C412850C4156434C699B0C81 /* ContentClient.swift in Sources */,
+				34C6033BFBB0453902E1EA1F /* CacheStore.swift in Sources */,
+				6A8A676623D5ADC386592820 /* SwiftDataModels.swift in Sources */,
 				87BE6D7359301266D5D8B0A7 /* ContentRepository.swift in Sources */,
 				7005EF39708B68EA238308CF /* ContentView.swift in Sources */,
 				628DA491C6D887FC812921CB /* DetailView.swift in Sources */,

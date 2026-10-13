@@ -1,6 +1,6 @@
 import SwiftUI
 
-// MARK: - 收藏 / 最近观看（Infuse 式媒体库行）
+// MARK: - 收藏 / 最近观看（数据源：SwiftData CacheStore）
 
 struct LibraryView: View {
     enum Mode: String {
@@ -8,9 +8,10 @@ struct LibraryView: View {
         case recent = "最近观看"
     }
 
-    @EnvironmentObject private var store: LocalStore
     let mode: Mode
     let onOpen: (Series) -> Void
+
+    @State private var items: [Series] = []
 
     var body: some View {
         ScrollView {
@@ -20,30 +21,30 @@ struct LibraryView: View {
                     .foregroundStyle(Theme.textPrimary)
                     .padding(.bottom, 22)
 
-                switch mode {
-                case .favorites:
-                    if store.library.favorites.isEmpty {
-                        emptyHint("还没有收藏，在详情页点「收藏」即可加入")
-                    } else {
-                        grid(store.library.favorites)
-                    }
-                case .recent:
-                    let recent = store.recentProgress
-                    if recent.isEmpty {
-                        emptyHint("还没有观看记录，播放过的内容会出现在这里")
-                    } else {
-                        grid(recent.map { $0.series })
-                    }
+                if items.isEmpty {
+                    emptyHint(mode == .favorites
+                              ? "还没有收藏，在详情页点「收藏」即可加入"
+                              : "还没有观看记录，播放过的内容会出现在这里")
+                } else {
+                    grid(items)
                 }
             }
             .padding(.horizontal, 72)
             .padding(.bottom, 60)
         }
+        .task(id: mode) { await load() }
     }
 
-    private func grid(_ items: [Series]) -> some View {
+    private func load() async {
+        let api = ContentClient()
+        items = mode == .favorites
+            ? await api.cache.favoriteSeries()
+            : await api.cache.recentSeries()
+    }
+
+    private func grid(_ list: [Series]) -> some View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 26)], spacing: 30) {
-            ForEach(items) { series in
+            ForEach(list) { series in
                 PosterCard(series: series) { onOpen(series) }
             }
         }

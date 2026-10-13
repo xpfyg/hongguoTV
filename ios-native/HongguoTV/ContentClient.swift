@@ -5,9 +5,13 @@ import Foundation
 /// 方法签名与旧 APIClient 保持兼容，UI 层只替换构造即可。
 struct ContentClient {
     private let repo: ContentRepository
+    /// SwiftData 缓存层（UI：收藏/观看/搜索历史/本地搜索）
+    let cache: CacheStore
 
+    @MainActor
     init(session: URLSession = .shared) {
-        repo = ContentRepository(session: session)
+        cache = CacheStore.shared
+        repo = ContentRepository(session: session, cache: cache)
     }
 
     /// 直连自检（替代旧 /health）
@@ -21,8 +25,8 @@ struct ContentClient {
         try await repo.home(page: page).items
     }
 
-    func category(typeId: String, page: Int) async throws -> (name: String, items: [Series]) {
-        try await repo.category(typeId: typeId, page: page)
+    func category(typeId: String, slug: String? = nil, page: Int) async throws -> (name: String, subCategories: [SubCategory], items: [Series]) {
+        try await repo.category(typeId: typeId, slug: slug, page: page)
     }
 
     func actorSearch(query: String, page: Int) async throws -> (actor: ActorProfile?, items: [Series]) {

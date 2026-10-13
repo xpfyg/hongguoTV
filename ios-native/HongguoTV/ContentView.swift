@@ -60,6 +60,7 @@ struct ContentView: View {
 
 struct TabBar: View {
     @Binding var selection: AppTab
+    @FocusState private var focusedTab: AppTab?
 
     var body: some View {
         HStack(spacing: 10) {
@@ -89,8 +90,14 @@ struct TabBar: View {
                     .clipShape(Capsule())
                 }
                 .buttonStyle(TabButtonStyle(selected: selection == t))
+                // tvOS：焦点移动到顶部 Tab 即自动切换，无需按确认键
+                .focused($focusedTab, equals: t)
             }
             Spacer(minLength: 0)
+        }
+        .onChange(of: focusedTab) { _, newFocus in
+            guard let newFocus else { return }
+            selection = newFocus
         }
     }
 }

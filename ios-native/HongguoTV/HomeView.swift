@@ -22,7 +22,6 @@ let allCategories: [CategoryMeta] = [
 ]
 
 struct HomeView: View {
-    @EnvironmentObject private var store: LocalStore
     let onOpen: (Series) -> Void
 
     @State private var items: [Series] = []
@@ -32,6 +31,11 @@ struct HomeView: View {
     @State private var connected = false
     @State private var selectedCategory = "short"
     @State private var categoryName = "短剧"
+    @State private var subCategories: [SubCategory] = []
+    @State private var selectedSub: String? = nil // nil = 全部
+    @State private var loadSeq = 0
+    @FocusState private var focusedCategory: String?
+    @FocusState private var subFocus: String? // "all" = 全部小分类
 
     private let columns = [GridItem(.adaptive(minimum: 220), spacing: 26)]
 
@@ -39,6 +43,9 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 0) {
             // 顶部：横版分类块（固定，不随内容滚动）
             categoryBar
+            if !subCategories.isEmpty {
+                subCategoryBar
+            }
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     if let error {
@@ -53,7 +60,7 @@ struct HomeView: View {
                         }
                         .frame(maxWidth: .infinity, minHeight: 400)
                     } else if connected {
-                        sectionHeader(categoryName)
+                        sectionHeader(subtitle)
                         posterGrid
                     } else if busy && items.isEmpty {
                         ProgressView()
@@ -68,6 +75,21 @@ struct HomeView: View {
             }
         }
         .task { await connectAndLoad() }
+        .onChange(of: focusedCategory) { _, newFocus in
+            guard let newFocus else { return }
+            Task { await selectCategory(newFocus) }
+        }
+        .onChange(of: subFocus) { _, newFocus in
+            guard let newFocus else { return }
+            Task { await selectSub(newFocus == "all" ? nil : newFocus) }
+        }
+    }
+
+    private var subtitle: String {
+        if let sub = selectedSub, let name = subCategories.first(where: { $0.slug == sub })?.name {
+            return "\(categoryName) · \(name)"
+        }
+        return categoryName
     }
 
     // MARK: - 横版分类块
@@ -114,6 +136,50 @@ struct HomeView: View {
                     .stroke(selected ? Theme.accent : Color.clear, lineWidth: 2)
             )
         }
+        .buttonStyle(.plain)
+        // tvOS：焦点移动到分类块即自动切换该分类，无需按确认键
+        .focused($focusedCategory, equals: cat.id)
+    }
+
+    // MARK: - 小分类栏（大分类为真人/漫剧/AI 剧时显示；两排网格，焦点移动即切换）
+
+    private var subCategoryBar: some View {
+        let items = [SubCategory(slug: "all", name: "全部")] + subCategories
+        // 超过 15 个才排第二排（第一排固定 15 个，其余换行）；间距 8 保持紧凑
+        let columns = items.count > 15 ? 15 : items.count
+        return LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: columns), spacing: 8) {
+            ForEach(items) { sub in
+                subCategoryBlock(
+                    sub.name,
+                    key: sub.slug,
+                    selected: sub.slug == "all" ? selectedSub == nil : selectedSub == sub.slug
+                )
+            }
+        }
+        .padding(.horizontal, 72)
+        .padding(.bottom, 16)
+    }
+
+    private func subCategoryBlock(_ name: String, key: String, selected: Bool) -> some View {
+        Button {
+            Task { await selectSub(key == "all" ? nil : key) }
+        } label: {
+            Text(name)
+                .font(.system(size: 19, weight: .semibold))
+                .foregroundStyle(selected ? Theme.accent : Theme.textPrimary)
+                .padding(.horizontal, 18)
+                .padding(.vertical, 9)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(selected ? Theme.accent.opacity(0.22) : Color.white.opacity(0.05))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(selected ? Theme.accent : Color.clear, lineWidth: 1.6)
+                )
+        }
+        .buttonStyle(.plain)
+        .focused($subFocus, equals: key)
     }
 
     // MARK: - 内容
@@ -145,16 +211,47 @@ struct HomeView: View {
         busy = true
         error = nil
         defer { busy = false }
+        // 焦点连续移动会并发触发；只接受最新一次请求的结果
+        loadSeq += 1
+        let seq = loadSeq
         let api = ContentClient()
         do {
             _ = try await api.health()
             connected = true
             items = []
             page = 1
-            let (name, list) = try await api.category(typeId: id, page: 1)
+            let (name, subs, list) = try await api.category(typeId: id, page: 1)
+            guard seq == loadSeq else { return }
             categoryName = name
+            subCategories = subs
+            selectedSub = nil
             items = list
         } catch let caught {
+            guard seq == loadSeq else { return }
+            items = []
+            error = errorMessage(caught)
+        }
+    }
+
+    private func selectSub(_ slug: String?) async {
+        guard slug != selectedSub else { return }
+        selectedSub = slug
+        busy = true
+        error = nil
+        defer { busy = false }
+        loadSeq += 1
+        let seq = loadSeq
+        let api = ContentClient()
+        do {
+            _ = try await api.health()
+            connected = true
+            items = []
+            page = 1
+            let (_, _, list) = try await api.category(typeId: selectedCategory, slug: slug, page: 1)
+            guard seq == loadSeq else { return }
+            items = list
+        } catch let caught {
+            guard seq == loadSeq else { return }
             items = []
             error = errorMessage(caught)
         }
@@ -167,8 +264,9 @@ struct HomeView: View {
             connected = true
             items = []
             page = 1
-            let (name, list) = try await api.category(typeId: "short", page: 1)
+            let (name, subs, list) = try await api.category(typeId: "short", page: 1)
             categoryName = name
+            subCategories = subs
             items = list
         } catch let caught {
             error = errorMessage(caught)
@@ -185,8 +283,9 @@ struct HomeView: View {
             error = nil
             items = []
             page = 1
-            let (name, list) = try await api.category(typeId: selectedCategory, page: 1)
+            let (name, subs, list) = try await api.category(typeId: selectedCategory, slug: selectedSub, page: 1)
             categoryName = name
+            subCategories = subs
             items = list
         } catch let caught {
             connected = false
@@ -201,7 +300,7 @@ struct HomeView: View {
         let api = ContentClient()
         do {
             let next = page + 1
-            let (_, more) = try await api.category(typeId: selectedCategory, page: next)
+            let (_, _, more) = try await api.category(typeId: selectedCategory, slug: selectedSub, page: next)
             guard !more.isEmpty else { return }
             page = next
             items += more.filter { m in !items.contains { $0.id == m.id } }
@@ -219,7 +318,7 @@ struct HomeView: View {
 struct PosterCard: View {
     let series: Series
     let onSelect: () -> Void
-    @EnvironmentObject private var store: LocalStore
+    @State private var favorite = false
 
     var body: some View {
         Button {
@@ -228,7 +327,7 @@ struct PosterCard: View {
                 ZStack(alignment: .topTrailing) {
                     PosterImage(url: series.cover, corner: 14)
                         .aspectRatio(2 / 3, contentMode: .fit)
-                    if store.isFavorite(series.id) {
+                    if favorite {
                         Image(systemName: "star.fill")
                             .font(.system(size: 20))
                             .foregroundStyle(.yellow)
@@ -244,6 +343,13 @@ struct PosterCard: View {
                     .lineLimit(2)
                     .multilineTextAlignment(.leading)
             }
+        }
+        .buttonStyle(.plain)
+        // tvOS：显式声明可聚焦；收藏角标在出现时一次性查询（onAppear 不影响焦点）
+        .focusable(true)
+        .onAppear {
+            let api = ContentClient()
+            favorite = api.cache.isFavorite(seriesId: series.id)
         }
     }
 }
