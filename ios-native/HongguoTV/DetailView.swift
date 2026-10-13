@@ -8,6 +8,7 @@ struct DetailView: View {
     @Environment(\.dismiss) private var dismiss
     let series: Series
 
+    @State private var current: Series
     @State private var detail: Detail?
     @State private var busy = false
     @State private var error: String?
@@ -16,14 +17,20 @@ struct DetailView: View {
     @State private var playbackBusy = false
     @State private var playbackError: String?
     @State private var showEpisodes = false
+    @State private var selectedActor: Celebrity?
     @FocusState private var playFocused: Bool
 
-    private var resume: Progress? { store.progress(for: series.id) }
+    init(series: Series) {
+        self.series = series
+        _current = State(initialValue: series)
+    }
+
+    private var resume: Progress? { store.progress(for: current.id) }
 
     var body: some View {
         ZStack {
             // 背景大海报（模糊压暗）
-            AsyncImage(url: URL(string: series.cover)) { phase in
+            AsyncImage(url: URL(string: current.cover)) { phase in
                 if case .success(let image) = phase {
                     image.resizable().scaledToFill()
                 }
@@ -39,23 +46,23 @@ struct DetailView: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack(alignment: .top, spacing: 48) {
                     // 上：竖版海报
-                    PosterImage(url: series.cover, corner: 20)
+                    PosterImage(url: current.cover, corner: 20)
                         .frame(width: 200, height: 300)
 
                         // 右：上为名称/简介/操作，下为选集
                         VStack(alignment: .leading, spacing: 0) {
                             VStack(alignment: .leading, spacing: 18) {
-                                Text(series.title)
+                                Text(current.title)
                                     .font(.system(size: 46, weight: .heavy))
                                     .foregroundStyle(Theme.textPrimary)
                                     .lineLimit(1)
                                 HStack(spacing: 12) {
-                                    badge(series.badge)
-                                    Text(series.tags)
+                                    badge(current.badge)
+                                    Text(current.tags)
                                         .font(.system(size: 22, weight: .medium))
                                         .foregroundStyle(Theme.textSecondary)
                                 }
-                                Text(series.description)
+                                Text(current.description)
                                     .font(.system(size: 22))
                                     .foregroundStyle(Theme.textSecondary)
                                     .lineLimit(3)
@@ -94,7 +101,7 @@ struct DetailView: View {
                                         .padding(.top, 4)
                                 }
 
-                                // 演职人员（服务端未返回时自动隐藏）
+                                // 演职人员（点击查看相关剧集）
                                 if let detail, let celes = detail.celebrities, !celes.isEmpty {
                                     VStack(alignment: .leading, spacing: 10) {
                                         Text("演职人员")
@@ -103,21 +110,25 @@ struct DetailView: View {
                                         ScrollView(.horizontal, showsIndicators: false) {
                                             HStack(spacing: 18) {
                                                 ForEach(celes) { c in
-                                                    VStack(spacing: 4) {
-                                                        AvatarImage(url: c.avatar, name: c.name, size: 44)
-                                                        VStack(spacing: 1) {
-                                                            Text(c.name)
-                                                                .font(.system(size: 15, weight: .semibold))
-                                                                .foregroundStyle(Theme.textPrimary)
-                                                                .lineLimit(1)
-                                                            if !c.role.isEmpty {
-                                                                Text(c.role)
-                                                                    .font(.system(size: 12))
-                                                                    .foregroundStyle(Theme.textSecondary)
+                                                    Button {
+                                                        selectedActor = c
+                                                    } label: {
+                                                        VStack(spacing: 4) {
+                                                            AvatarImage(url: c.avatar, name: c.name, size: 44)
+                                                            VStack(spacing: 1) {
+                                                                Text(c.name)
+                                                                    .font(.system(size: 15, weight: .semibold))
+                                                                    .foregroundStyle(Theme.textPrimary)
                                                                     .lineLimit(1)
+                                                                if !c.role.isEmpty {
+                                                                    Text(c.role)
+                                                                        .font(.system(size: 12))
+                                                                        .foregroundStyle(Theme.textSecondary)
+                                                                        .lineLimit(1)
+                                                                }
                                                             }
+                                                            .frame(width: 88)
                                                         }
-                                                        .frame(width: 88)
                                                     }
                                                 }
                                             }
@@ -165,10 +176,26 @@ struct DetailView: View {
                 }
                 .padding(.horizontal, 72)
                 .padding(.bottom, 40)
-        }
-        .task {
+                .opacity(selectedActor == nil ? 1 : 0.12)
+                .allowsHitTesting(selectedActor == nil)
+
+                // 演职人员作品页（覆盖在当前详情之上，返回后恢复）
+                if let actor = selectedActor {
+                    ActorWorksView(
+                        actor: actor,
+                        onClose: { selectedActor = nil },
+                        onOpenSeries: { s in
+                            current = s
+                            selectedActor = nil
+                            detail = nil
+                            showEpisodes = false
+                        }
+                    )
+                    .transition(.opacity)
+                }
+            }
+        .task(id: current.id) {
             await loadDetail()
-            // 焦点先稳定在「播放」按钮，再渲染选集，避免 ScrollView 被选集抢焦点自动滚动
             try? await Task.sleep(nanoseconds: 350_000_000)
             playFocused = true
             try? await Task.sleep(nanoseconds: 150_000_000)
@@ -179,7 +206,7 @@ struct DetailView: View {
         }
         .fullScreenCover(item: $playingEpisode) { episode in
             if let playback {
-                NativePlayer(playback: playback, series: series, episode: episode)
+                NativePlayer(playback: playback, series: current, episode: episode)
             }
         }
     }
@@ -197,26 +224,8 @@ struct DetailView: View {
     private func episodesGrid(_ eps: [Episode]) -> some View {
         LazyVGrid(columns: [GridItem(.adaptive(minimum: 104), spacing: 16)], spacing: 16) {
             ForEach(eps) { ep in
-                Button {
+                EpisodeCell(ep: ep, isResume: resume?.episodeId == ep.id) {
                     play(ep.id, fresh: false)
-                } label: {
-                    VStack(spacing: 6) {
-                        Text("\(ep.number)")
-                            .font(.system(size: 22, weight: .bold))
-                        if !ep.title.isEmpty {
-                            Text(ep.title)
-                                .font(.system(size: 15))
-                                .foregroundStyle(Theme.textTertiary)
-                                .lineLimit(1)
-                        }
-                    }
-                    .frame(width: 104, height: 72)
-                    .background(.ultraThinMaterial)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 14)
-                            .stroke(resume?.episodeId == ep.id ? Theme.accent : Theme.glassStroke, lineWidth: 1.5)
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: 14))
                 }
             }
         }
@@ -317,5 +326,195 @@ struct NativePlayer: View {
         // 接近结尾视为看完，位置归零便于下次从头播
         if completed { p.position = 0 }
         store.updateProgress(p)
+    }
+}
+
+// MARK: - 选集单元格（轻量聚焦：保留毛玻璃，不放大）
+
+struct EpisodeCell: View {
+    let ep: Episode
+    let isResume: Bool
+    let onPlay: () -> Void
+    @Environment(\.isFocused) private var focused
+
+    var body: some View {
+        Button {
+            onPlay()
+        } label: {
+            VStack(spacing: 6) {
+                Text("\(ep.number)")
+                    .font(.system(size: 22, weight: .bold))
+                if !ep.title.isEmpty {
+                    Text(ep.title)
+                        .font(.system(size: 15))
+                        .foregroundStyle(Theme.textTertiary)
+                        .lineLimit(1)
+                }
+            }
+            .frame(width: 104, height: 72)
+            .background(.ultraThinMaterial)
+            .overlay(
+                RoundedRectangle(cornerRadius: 14)
+                    .stroke(isResume ? Theme.accent : (focused ? Color.white.opacity(0.9) : Theme.glassStroke),
+                            lineWidth: isResume || focused ? 2.5 : 1.5)
+            )
+            .clipShape(RoundedRectangle(cornerRadius: 14))
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+// MARK: - 演职人员作品页（搜索该演员的相关剧集）
+
+struct ActorWorksView: View {
+    let actor: Celebrity
+    let onClose: () -> Void
+    let onOpenSeries: (Series) -> Void
+    @EnvironmentObject private var store: LocalStore
+
+    @State private var profile: ActorProfile?
+    @State private var items: [Series] = []
+    @State private var page = 1
+    @State private var busy = false
+    @State private var error: String?
+    @State private var noProfile = false
+    @FocusState private var returnFocused: Bool
+
+    private let columns = [GridItem(.adaptive(minimum: 220), spacing: 26)]
+
+    var body: some View {
+        ZStack {
+            Theme.background.ignoresSafeArea()
+
+            VStack(alignment: .leading, spacing: 0) {
+                // 返回
+                Button {
+                    onClose()
+                } label: {
+                    Label("返回", systemImage: "chevron.left")
+                        .font(.system(size: 24, weight: .semibold))
+                        .foregroundStyle(Theme.textPrimary)
+                }
+                .buttonStyle(.plain)
+                .focused($returnFocused)
+                .padding(.top, 30)
+
+                // 演员信息
+                HStack(alignment: .center, spacing: 32) {
+                    AvatarImage(url: profile?.avatar.isEmpty == false ? profile!.avatar : actor.avatar,
+                                name: actor.name, size: 128)
+                        .frame(width: 128, height: 128)
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(actor.name)
+                            .font(.system(size: 46, weight: .heavy))
+                            .foregroundStyle(Theme.textPrimary)
+                        if let profile, !profile.subtitle.isEmpty {
+                            Text(profile.subtitle)
+                                .font(.system(size: 22))
+                                .foregroundStyle(Theme.textSecondary)
+                        }
+                        if let profile, !profile.description.isEmpty {
+                            Text(profile.description)
+                                .font(.system(size: 20))
+                                .foregroundStyle(Theme.textTertiary)
+                                .lineLimit(2)
+                                .frame(maxWidth: 760, alignment: .leading)
+                        }
+                    }
+                }
+                .padding(.top, 24)
+
+                Text("相关剧集")
+                    .font(.system(size: 30, weight: .heavy))
+                    .foregroundStyle(Theme.textPrimary)
+                    .padding(.top, 28)
+                    .padding(.bottom, 22)
+
+                if busy && items.isEmpty {
+                    ProgressView().scaleEffect(1.4).frame(maxWidth: .infinity, minHeight: 360)
+                } else if let error {
+                    VStack(spacing: 14) {
+                        Image(systemName: "exclamationmark.triangle")
+                            .font(.system(size: 40))
+                            .foregroundStyle(Theme.textTertiary)
+                        Text(error).font(.system(size: 22)).foregroundStyle(Theme.textSecondary)
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 360)
+                } else if items.isEmpty {
+                    Text("未找到相关剧集")
+                        .font(.system(size: 22))
+                        .foregroundStyle(Theme.textTertiary)
+                        .frame(maxWidth: .infinity, minHeight: 360)
+                } else {
+                    ScrollViewReader { proxy in
+                        ScrollView(.vertical, showsIndicators: false) {
+                            LazyVGrid(columns: columns, spacing: 30) {
+                                ForEach(items) { s in
+                                    PosterCard(series: s) {
+                                        onOpenSeries(s)
+                                    }
+                                    .onAppear {
+                                        if s.id == items.last?.id { Task { await loadMore() } }
+                                    }
+                                }
+                            }
+                            .id("works-top")
+                            .padding(.bottom, 40)
+                        }
+                        .onAppear {
+                            DispatchQueue.main.async {
+                                proxy.scrollTo("works-top", anchor: .top)
+                            }
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                                proxy.scrollTo("works-top", anchor: .top)
+                            }
+                        }
+                        .frame(height: 620)
+                    }
+                }
+            }
+            .padding(.horizontal, 72)
+        }
+        .task {
+            await load()
+            try? await Task.sleep(nanoseconds: 350_000_000)
+            returnFocused = true
+            try? await Task.sleep(nanoseconds: 200_000_000)
+            returnFocused = true
+        }
+    }
+
+    private func load() async {
+        busy = true
+        defer { busy = false }
+        let api = APIClient(baseUrl: store.settings.baseUrl, token: store.settings.token)
+        do {
+            let (p, list) = try await api.actorSearch(query: actor.name, page: 1)
+            profile = p
+            noProfile = (p == nil)
+            items = list
+            page = 1
+        } catch let caught {
+            error = errorMessage(caught)
+        }
+    }
+
+    private func loadMore() async {
+        guard !busy else { return }
+        busy = true
+        defer { busy = false }
+        let api = APIClient(baseUrl: store.settings.baseUrl, token: store.settings.token)
+        do {
+            let next = page + 1
+            let (_, more) = try await api.actorSearch(query: actor.name, page: next)
+            guard !more.isEmpty else { return }
+            page = next
+            items += more.filter { m in !items.contains { $0.id == m.id } }
+        } catch {}
+    }
+
+    private func errorMessage(_ e: Error) -> String {
+        if let ae = e as? APIError { return ae.errorDescription ?? "请求失败" }
+        return "请求失败"
     }
 }

@@ -24,6 +24,15 @@ struct Celebrity: Codable, Identifiable, Hashable {
     let avatar: String
 }
 
+/// 演员档案（/api/actor-search 返回的 actor 字段，可能为 null）
+struct ActorProfile: Codable, Identifiable, Hashable {
+    let id: String
+    let name: String
+    let avatar: String
+    let description: String
+    let subtitle: String
+}
+
 struct Detail: Codable, Identifiable, Hashable {
     let id: String
     let title: String

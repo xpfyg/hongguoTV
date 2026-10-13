@@ -71,6 +71,14 @@ struct APIClient {
         return (resp.typeName, resp.items)
     }
 
+    /// 演职人员搜索：/api/actor-search?q=&page=，返回演员档案与相关剧集
+    func actorSearch(query: String, page: Int) async throws -> (actor: ActorProfile?, items: [Series]) {
+        let q = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? query
+        let data = try await request(path: "/api/actor-search?q=\(q)&page=\(page)")
+        let resp = try JSONDecoder().decode(ActorSearchResponse.self, from: data)
+        return (resp.actor, resp.items)
+    }
+
     func search(query: String, page: Int) async throws -> [Series] {
         let q = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? query
         let data = try await request(path: "/api/search?q=\(q)&page=\(page)")
@@ -105,5 +113,10 @@ struct APIClient {
             case typeName = "type_name"
             case items
         }
+    }
+
+    private struct ActorSearchResponse: Codable {
+        let actor: ActorProfile?
+        let items: [Series]
     }
 }
