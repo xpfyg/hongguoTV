@@ -12,6 +12,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  TVEventControl,
   useWindowDimensions,
   View,
 } from "react-native";
@@ -45,12 +46,16 @@ const sample: Detail = {
 export default function App() {
   const { width, height } = useWindowDimensions();
   const inset = tvInsets(width, height);
+  // react-native-tvos: Menu 键手势默认关闭，必须显式启用才会进入 BackHandler 链路
+  useEffect(() => {
+    TVEventControl.enableTVMenuKey();
+  }, []);
   const [ready, setReady] = useState(false);
   const [settings, setSettings] = useState<Settings>({
-    baseUrl: "",
+    baseUrl: "http://localhost:8787",
     token: "",
   });
-  const [url, setUrl] = useState("");
+  const [url, setUrl] = useState("http://localhost:8787");
   const [token, setToken] = useState("");
   const [library, setLibrary] = useState<Library>({
     favorites: [],
@@ -95,8 +100,12 @@ export default function App() {
   useEffect(() => {
     loadState()
       .then((data) => {
-        setSettings(data.settings);
-        setUrl(data.settings.baseUrl);
+        const defaultUrl = "http://localhost:8787";
+        setSettings({
+          baseUrl: data.settings.baseUrl || defaultUrl,
+          token: data.settings.token,
+        });
+        setUrl(data.settings.baseUrl || defaultUrl);
         setToken(data.settings.token);
         setLibrary(data.library);
         libraryRef.current = data.library;

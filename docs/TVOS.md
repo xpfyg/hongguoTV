@@ -142,3 +142,25 @@ HERMES_ENGINE_TARBALL_PATH=/绝对路径/hermes-ios-0.81.5-release.tar.gz (cd io
 - `device`：`-sdk appletvos` 构建；未提供 `DEVELOPMENT_TEAM` 时以 `CODE_SIGNING_ALLOWED=NO` 产出未签名 .app，之后可在 Xcode 中补签名；提供 `DEVELOPMENT_TEAM` 时自动签名。
 - 前置检查：node、node_modules、Podfile.lock、xcworkspace；缺失时给出明确提示。
 - 版本号取自 `package.json`（0.1.1），与工程 `MARKETING_VERSION` 一致。
+
+## Web 调试器（不编译原生 App 的调试方式）
+
+工程 UI 是 React Native（tvOS 专用组件），**无法直接"网页打开"**；但数据层（`src/domain/`、`src/data/provider.ts`、`src/data/useCatalog.ts`）是纯 TypeScript，无 RN 依赖，可直接在浏览器复用。
+
+`web-debug/` 是一个独立 Vite + React + TS 调试器，复用上述数据层，浏览器里连内容服务调试接口/数据链路：
+
+```sh
+cd web-debug
+npm install        # 网络差时先 export 代理变量
+npm run dev        # 开发模式，默认 http://localhost:5173（被占用自动 +1）
+npm run build      # 产物在 web-debug/dist
+```
+
+用法：打开页面 → 填服务地址（默认 `http://localhost:8787`）→「连接」→ 推荐网格（键盘方向键 + Enter 模拟焦点）→ 详情 → 选集播放（HTML5 `<video>`；带访问口令时走 fetch→Blob，因为 `<video>` 无法携带自定义请求头）。
+
+局限（调试用途，非产品）：UI 与 tvOS 版视觉/焦点行为不完全一致；`storage.ts`（AsyncStorage）不迁移，收藏/最近观看为内存态。
+
+## 已知问题与修复记录（续）
+
+- **tvOS 遥控器 Menu 键返回失效**：react-native-tvos 默认关闭 Menu 键手势（`RCTTVRemoteHandler.__useMenuKey = NO`），须在应用启动时调用 `TVEventControl.enableTVMenuKey()`，Menu 键才会进入 `BackHandler`（`BackHandler.ios.js` 监听 `eventType === 'menu'`）。已在 `App.tsx` 挂载时启用，播放器/详情/网格返回均生效。
+- **服务地址默认值**：设置页服务地址默认预填 `http://localhost:8787`（无存档时 `settings.baseUrl` 同样回落到该默认值）；模拟器上 localhost 指模拟器自身，真机 Apple TV 上需改为服务机局域网地址。
