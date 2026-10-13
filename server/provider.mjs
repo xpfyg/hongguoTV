@@ -210,6 +210,39 @@ export const provider = {
     if (!Array.isArray(pageData?.searchList)) throw new Error("搜索数据不可用");
     return { items: cards(pageData.searchList.map(api.itemToCard)), page };
   },
+  // 按演职人员搜索：官网搜索演员名会返回演员卡片（自带参演剧集 video_list）与剧集条目。
+  async actorSearch(keyword, page = 1) {
+    const data = await api.routerData(
+      `${SITE}/search/${encodeURIComponent(keyword)}?page=${page}`
+    );
+    const pageData =
+      data?.loaderData?.["search_(keyword)/page"] ||
+      data?.loaderData?.search_page;
+    if (!Array.isArray(pageData?.searchList)) throw new Error("搜索数据不可用");
+    const actorEntry = pageData.searchList.find(
+      (item) => Number(item?.doc_type) === 46
+    );
+    const info = actorEntry?.user_info || {};
+    const actor = actorEntry
+      ? {
+          id: String(
+            info.actor_id || info.person_id || actorEntry.keyword || ""
+          ),
+          name: info.user_name || actorEntry.name || "",
+          avatar: info.user_avatar || "",
+          description: info.description || "",
+          subtitle: Array.isArray(info.subtitle_list)
+            ? info.subtitle_list.join(" / ")
+            : "",
+        }
+      : null;
+    const works = actorEntry?.video_list || [];
+    const items =
+      actor && Array.isArray(works) && works.length
+        ? cards(works.map(api.itemToCard))
+        : cards(pageData.searchList.map(api.itemToCard));
+    return { actor, items, page };
+  },
   async detail(id) {
     const data = await api.routerData(`${SITE}/detail?series_id=${id}`);
     const series = data?.loaderData?.detail_page?.seriesDetail;

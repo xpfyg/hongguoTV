@@ -64,6 +64,13 @@ struct APIClient {
         return list.items
     }
 
+    /// 大分类内容：/api/category/:typeId?page=N，返回分类名与剧集列表
+    func category(typeId: String, page: Int) async throws -> (name: String, items: [Series]) {
+        let data = try await request(path: "/api/category/\(typeId)?page=\(page)")
+        let resp = try JSONDecoder().decode(CategoryResponse.self, from: data)
+        return (resp.typeName, resp.items)
+    }
+
     func search(query: String, page: Int) async throws -> [Series] {
         let q = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? query
         let data = try await request(path: "/api/search?q=\(q)&page=\(page)")
@@ -87,5 +94,16 @@ struct APIClient {
 
     private struct ListResponse: Codable {
         let items: [Series]
+    }
+
+    private struct CategoryResponse: Codable {
+        let typeId: String
+        let typeName: String
+        let items: [Series]
+        enum CodingKeys: String, CodingKey {
+            case typeId = "type_id"
+            case typeName = "type_name"
+            case items
+        }
     }
 }

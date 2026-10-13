@@ -116,3 +116,26 @@ test("category endpoint validates type ids and pages, then forwards to provider"
   assert.equal((await fetch(url + "/api/category/human?page=0")).status, 400);
   assert.equal((await fetch(url + "/api/category/human?page=101")).status, 400);
 });
+test("actor-search endpoint validates query and forwards to provider", async (t) => {
+  const seen = [];
+  const url = await fixture(t, {
+    actorSearch: async (keyword, page) => {
+      seen.push([keyword, page]);
+      return {
+        actor: { id: "7377", name: "孟娜", avatar: "", description: "", subtitle: "女演员" },
+        items: [{ id: "1", title: "特工男友超给力" }],
+        page,
+      };
+    },
+  });
+  const res = await fetch(url + "/api/actor-search?q=孟娜&page=2");
+  assert.equal(res.status, 200);
+  assert.deepEqual(await res.json(), {
+    actor: { id: "7377", name: "孟娜", avatar: "", description: "", subtitle: "女演员" },
+    items: [{ id: "1", title: "特工男友超给力" }],
+    page: 2,
+  });
+  assert.deepEqual(seen, [["孟娜", 2]]);
+  assert.equal((await fetch(url + "/api/actor-search?q=")).status, 400);
+  assert.equal((await fetch(url + "/api/actor-search?q=x&page=0")).status, 400);
+});

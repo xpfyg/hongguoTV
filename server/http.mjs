@@ -68,6 +68,15 @@ export function createServer(provider, token = "") {
             : await provider.search(keyword, page)
         );
       }
+      if (url.pathname === "/api/actor-search") {
+        const page = Number(url.searchParams.get("page") || 1);
+        if (!Number.isInteger(page) || page < 1 || page > 100)
+          return json(400, { error: "分页参数无效" });
+        const keyword = (url.searchParams.get("q") || "").trim();
+        if (!keyword || keyword.length > 80)
+          return json(400, { error: "请输入 1–80 字的关键词" });
+        return json(200, await provider.actorSearch(keyword, page));
+      }
       const category = /^\/api\/category\/([a-z_]+)$/.exec(url.pathname);
       if (category) {
         if (!CATEGORY_IDS.includes(category[1]))
