@@ -125,8 +125,9 @@ struct PosterCard: View {
     @EnvironmentObject private var store: LocalStore
 
     var body: some View {
-        Button(action: onSelect) {
-            VStack(alignment: .leading, spacing: 10) {
+        Button {
+            onSelect()
+        } label: {            VStack(alignment: .leading, spacing: 10) {
                 ZStack(alignment: .topTrailing) {
                     PosterImage(url: series.cover, corner: 14)
                         .aspectRatio(2 / 3, contentMode: .fit)

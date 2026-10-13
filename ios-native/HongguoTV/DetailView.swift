@@ -15,6 +15,8 @@ struct DetailView: View {
     @State private var playback: PlaybackInfo?
     @State private var playbackBusy = false
     @State private var playbackError: String?
+    @State private var showEpisodes = false
+    @FocusState private var playFocused: Bool
 
     private var resume: Progress? { store.progress(for: series.id) }
 
@@ -33,84 +35,102 @@ struct DetailView: View {
             )
             .ignoresSafeArea()
 
-            ScrollView {
-                VStack(alignment: .leading, spacing: 0) {
-                    HStack(alignment: .top, spacing: 44) {
-                        PosterImage(url: series.cover, corner: 20)
-                            .frame(width: 240, height: 360)
-                        VStack(alignment: .leading, spacing: 18) {
-                            Text(series.title)
-                                .font(.system(size: 46, weight: .heavy))
-                                .foregroundStyle(Theme.textPrimary)
-                                .lineLimit(2)
-                            HStack(spacing: 12) {
-                                badge(series.badge)
-                                Text(series.tags)
-                                    .font(.system(size: 22, weight: .medium))
-                                    .foregroundStyle(Theme.textSecondary)
-                            }
-                            Text(series.description)
-                                .font(.system(size: 22))
-                                .foregroundStyle(Theme.textSecondary)
-                                .lineLimit(4)
-                                .frame(maxWidth: 720, alignment: .leading)
+            // 固定布局（当前剧集数 ≤ ~70 集一屏可容纳；超长选集后续改为局部滚动）
+            VStack(alignment: .leading, spacing: 0) {
+                HStack(alignment: .top, spacing: 48) {
+                    // 左：竖版海报
+                    PosterImage(url: series.cover, corner: 20)
+                        .frame(width: 300, height: 450)
 
-                            HStack(spacing: 20) {
-                                Button {
-                                    play(resume?.episodeId, fresh: false)
-                                } label: {
-                                    Label(resume != nil ? "继续播放" : "播放", systemImage: "play.fill")
+                        // 右：上为名称/简介/操作，下为选集
+                        VStack(alignment: .leading, spacing: 0) {
+                            VStack(alignment: .leading, spacing: 18) {
+                                Text(series.title)
+                                    .font(.system(size: 46, weight: .heavy))
+                                    .foregroundStyle(Theme.textPrimary)
+                                    .lineLimit(2)
+                                HStack(spacing: 12) {
+                                    badge(series.badge)
+                                    Text(series.tags)
+                                        .font(.system(size: 22, weight: .medium))
+                                        .foregroundStyle(Theme.textSecondary)
                                 }
-                                .primaryAction()
+                                Text(series.description)
+                                    .font(.system(size: 22))
+                                    .foregroundStyle(Theme.textSecondary)
+                                    .lineLimit(4)
+                                    .frame(maxWidth: 720, alignment: .leading)
 
-                                if resume != nil {
-                                    Button { play(nil, fresh: true) } label: {
-                                        Label("从头播放", systemImage: "arrow.counterclockwise")
+                                HStack(spacing: 20) {
+                                    Button {
+                                        play(resume?.episodeId, fresh: false)
+                                    } label: {
+                                        Label(resume != nil ? "继续播放" : "播放", systemImage: "play.fill")
+                                    }
+                                    .primaryAction()
+                                    .focused($playFocused)
+
+                                    if resume != nil {
+                                        Button { play(nil, fresh: true) } label: {
+                                            Label("从头播放", systemImage: "arrow.counterclockwise")
+                                        }
+                                        .glassAction()
+                                    }
+
+                                    Button {
+                                        store.toggleFavorite(series)
+                                    } label: {
+                                        Label(store.isFavorite(series.id) ? "已收藏" : "收藏", systemImage: "star.fill")
                                     }
                                     .glassAction()
                                 }
 
-                                Button {
-                                    store.toggleFavorite(series)
-                                } label: {
-                                    Label(store.isFavorite(series.id) ? "已收藏" : "收藏", systemImage: "star.fill")
+                                if playbackBusy {
+                                    ProgressView().scaleEffect(1.2).padding(.top, 6)
+                                } else if let playbackError {
+                                    Text(playbackError)
+                                        .font(.system(size: 20))
+                                        .foregroundStyle(Theme.accent)
+                                        .padding(.top, 4)
                                 }
-                                .glassAction()
                             }
 
-                            if playbackBusy {
-                                ProgressView().scaleEffect(1.2).padding(.top, 6)
-                            } else if let playbackError {
-                                Text(playbackError)
-                                    .font(.system(size: 20))
-                                    .foregroundStyle(Theme.accent)
-                                    .padding(.top, 4)
+                            // 右下：选集（延迟渲染，避免抢初始焦点导致页面自动滚动）
+                            VStack(alignment: .leading, spacing: 18) {
+                                if let detail, showEpisodes {
+                                    if !detail.episodes.isEmpty {
+                                        Text("选集")
+                                            .font(.system(size: 28, weight: .heavy))
+                                            .foregroundStyle(Theme.textPrimary)
+                                            .padding(.top, 36)
+                                        episodesGrid(detail.episodes)
+                                    }
+                                } else if busy {
+                                    ProgressView().scaleEffect(1.3)
+                                        .frame(maxWidth: .infinity, minHeight: 160)
+                                } else if let error {
+                                    Text(error).font(.system(size: 22)).foregroundStyle(Theme.accent)
+                                }
                             }
+                            .frame(maxWidth: .infinity, alignment: .leading)
                         }
                     }
                     .padding(.top, 20)
-
-                    if let detail {
-                        if !detail.episodes.isEmpty {
-                            Text("选集")
-                                .font(.system(size: 28, weight: .heavy))
-                                .foregroundStyle(Theme.textPrimary)
-                                .padding(.top, 40)
-                                .padding(.bottom, 18)
-                            episodesGrid(detail.episodes)
-                        }
-                    } else if busy {
-                        ProgressView().scaleEffect(1.3)
-                            .frame(maxWidth: .infinity, minHeight: 200)
-                    } else if let error {
-                        Text(error).font(.system(size: 22)).foregroundStyle(Theme.accent)
-                    }
                 }
                 .padding(.horizontal, 72)
                 .padding(.bottom, 70)
-            }
         }
-        .task { await loadDetail() }
+        .task {
+            await loadDetail()
+            // 焦点先稳定在「播放」按钮，再渲染选集，避免 ScrollView 被选集抢焦点自动滚动
+            try? await Task.sleep(nanoseconds: 350_000_000)
+            playFocused = true
+            try? await Task.sleep(nanoseconds: 150_000_000)
+            withAnimation(.easeOut(duration: 0.2)) { showEpisodes = true }
+            // 选集网格出现可能抢走焦点，稍后再拉回「播放」按钮
+            try? await Task.sleep(nanoseconds: 400_000_000)
+            playFocused = true
+        }
         .fullScreenCover(item: $playingEpisode) { episode in
             if let playback {
                 NativePlayer(playback: playback, series: series, episode: episode)

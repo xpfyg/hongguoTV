@@ -13,22 +13,22 @@ enum Theme {
 }
 
 /// 海报卡片聚焦效果：1.08 弹性放大 + 白描边 + 深投影（类似 Infuse 网格）
+/// 通过 @Environment(\.isFocused) 感知聚焦，不叠加 .focusable/.focused，
+/// 避免覆盖 Button 的默认选择语义（否则遥控器确认键无法触发按钮）
 struct FocusCard: ViewModifier {
-    @FocusState private var focused: Bool
+    @Environment(\.isFocused) private var isFocused
     var radius: CGFloat = 14
 
     func body(content: Content) -> some View {
         content
-            .focusable(true)
-            .focused($focused)
-            .scaleEffect(focused ? 1.08 : 1.0)
-            .shadow(color: focused ? Color.black.opacity(0.9) : Color.black.opacity(0.35),
-                    radius: focused ? 22 : 10, y: focused ? 14 : 6)
+            .scaleEffect(isFocused ? 1.08 : 1.0)
+            .shadow(color: isFocused ? Color.black.opacity(0.9) : Color.black.opacity(0.35),
+                    radius: isFocused ? 22 : 10, y: isFocused ? 14 : 6)
             .overlay(
                 RoundedRectangle(cornerRadius: radius, style: .continuous)
-                    .stroke(focused ? Color.white : Color.clear, lineWidth: focused ? 2 : 0)
+                    .stroke(isFocused ? Color.white : Color.clear, lineWidth: isFocused ? 2 : 0)
             )
-            .animation(.spring(response: 0.22, dampingFraction: 0.72), value: focused)
+            .animation(.spring(response: 0.22, dampingFraction: 0.72), value: isFocused)
     }
 }
 
