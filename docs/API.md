@@ -6,7 +6,9 @@
 | --- | --- |
 | `GET /health` | `service: hongguotv`、`version`、`apiVersion: 1`、`upstream: unverified`；只检查进程 |
 | `GET /api/home?page=1` | `{ items: Series[], page }` |
-| `GET /api/category/:typeId?page=1` | `{ type_id, type_name, items: Series[], page }` |
+| `GET /api/banners` | `{ items: Banner[] }`，首页轮播横版大图 |
+| `GET /api/category/:typeId?page=1` | `{ type_id, type_name, sub_categories: SubCategory[], items: Series[], page }` |
+| `GET /api/category/:typeId/:slug?page=1` | 二级小分类分页（真人/漫剧/AI 剧），非法 slug 返回 400 |
 | `GET /api/search?q=关键词&page=1` | `{ items: Series[], page }` |
 | `GET /api/actor-search?q=演员名&page=1` | `{ actor: Actor\|null, items: Series[], page }`，演员命中时 `items` 为该演员参演剧集 |
 | `GET /api/series/:id` | `Series` 加 `episodes: Episode[]` |
@@ -30,6 +32,10 @@
 | `rank_ai` | AI剧热播榜 | `/rank/hot-ai-drama`，分页 |
 
 无效 `typeId` 与非法分页返回 400；`/api/home` 现解析首页 `all`（热播短剧）分区（官网改版后旧分类 URL 已 301 到真人剧页）。
+
+二级小分类（`SubCategory`：`slug`/`name`）仅真人/漫剧/AI 剧分类存在：真人剧 24 个（romance 爱情、period 年代、costume 古装、suspense 悬疑…），漫剧/AI 剧各 8 个（creative 脑洞、fantasy 玄幻、apocalypse 末世…）。`/api/category/:typeId` 响应附带 `sub_categories`；小分类页 `/api/category/:typeId/:slug` 与分类页同构分页，非法 slug 与非法分页返回 400。`short` 与榜单分类无小分类。
+
+首页轮播（`Banner`）：`series_id`、`title`、`image`（PC 横版大图，约 2.26:1，仅轮播头部剧集）、`image_mobile`。轮播数量随官网变动（当前约 4 个）。
 
 按演职人员搜索：`/api/actor-search?q=孟娜` 返回演员卡片（`Actor`：`id`/`name`/`avatar`/`description`/`subtitle`）与参演剧集 `items`；关键词未命中演员时 `actor` 为 `null`，`items` 回退为普通搜索结果。详情接口的 `celebrities[].name` 可直接作为 `q` 使用。
 

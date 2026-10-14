@@ -54,6 +54,8 @@ export function createServer(provider, token = "") {
           apiVersion: 1,
           upstream: "unverified",
         });
+      if (url.pathname === "/api/banners")
+        return json(200, await provider.banners());
       if (url.pathname === "/api/home" || url.pathname === "/api/search") {
         const page = Number(url.searchParams.get("page") || 1);
         if (!Number.isInteger(page) || page < 1 || page > 100)

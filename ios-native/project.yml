@@ -2,7 +2,7 @@ name: HongguoTV
 options:
   bundleIdPrefix: com.hongguotv
   deploymentTarget:
-    tvOS: "17.0"
+    tvOS: "26.0"
   createIntermediateGroups: true
 settings:
   base:
@@ -23,7 +23,7 @@ targets:
       base:
         PRODUCT_NAME: "$(TARGET_NAME)"
         PRODUCT_BUNDLE_IDENTIFIER: com.hongguotv.tvos
-        TVOS_DEPLOYMENT_TARGET: "17.0"
+        TVOS_DEPLOYMENT_TARGET: "26.0"
         INFOPLIST_FILE: HongguoTV/Info.plist
         GENERATE_INFOPLIST_FILE: NO
         SWIFT_OBJC_BRIDGING_HEADER: HongguoTV/Crypto/BridgingHeader.h
@@ -39,7 +39,7 @@ targets:
       base:
         PRODUCT_NAME: "$(TARGET_NAME)"
         PRODUCT_BUNDLE_IDENTIFIER: com.hongguotv.tvos.tests
-        TVOS_DEPLOYMENT_TARGET: "17.0"
+        TVOS_DEPLOYMENT_TARGET: "26.0"
         GENERATE_INFOPLIST_FILE: YES
         BUNDLE_LOADER: "$(TEST_HOST)"
         ENABLE_TESTABILITY: YES

@@ -172,3 +172,30 @@ test("actor-search endpoint validates query and forwards to provider", async (t)
   assert.equal((await fetch(url + "/api/actor-search?q=")).status, 400);
   assert.equal((await fetch(url + "/api/actor-search?q=x&page=0")).status, 400);
 });
+
+test("banners endpoint forwards to provider and preserves fields", async (t) => {
+  let called = false;
+  const url = await fixture(t, {
+    banners: async () => {
+      called = true;
+      return {
+        items: [
+          {
+            series_id: "7503745441910017049",
+            title: "宴律，你的白月光回国了",
+            image: "https://cdn.example.com/banner.png",
+            image_mobile: "https://cdn.example.com/banner_m.png",
+          },
+        ],
+      };
+    },
+  });
+  const res = await fetch(url + "/api/banners");
+  assert.equal(res.status, 200);
+  assert.equal(called, true);
+  const body = await res.json();
+  assert.ok(Array.isArray(body.items));
+  assert.equal(body.items.length, 1);
+  assert.equal(body.items[0].series_id, "7503745441910017049");
+  assert.ok(body.items[0].image.endsWith(".png"));
+});

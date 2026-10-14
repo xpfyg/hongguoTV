@@ -149,6 +149,20 @@ async function browseCategory(route, page = 1, slug) {
   if (!Array.isArray(pageData?.recommendList)) throw new Error("分类数据不可用");
   return { items: cards(pageData.recommendList.map(api.itemToCard)), page };
 }
+// 官网首页 Banner 轮播：横版大图（background_cover_pc 约 2.26:1，4K），仅覆盖轮播的头部剧集。
+async function bannerList() {
+  const data = await api.routerData(`${SITE}/`);
+  const list = data?.loaderData?.page?.bannerList;
+  if (!Array.isArray(list)) throw new Error("轮播数据不可用");
+  return list
+    .filter((b) => b?.series_id)
+    .map((b) => ({
+      series_id: String(b.series_id),
+      title: b.series_name || "",
+      image: b.background_cover_pc || b.background_cover || "",
+      image_mobile: b.background_cover || b.background_cover_pc || "",
+    }));
+}
 const decodeHtml = (value) =>
   String(value)
     .replace(/&quot;/g, '"')
@@ -206,6 +220,10 @@ export async function rankPage(route, page = 1) {
 }
 
 export const provider = {
+  // 官网首页 Banner 轮播（横版大图，仅头部剧集）
+  async banners() {
+    return { items: await bannerList() };
+  },
   // 官网已改版：旧 /category?tab=1 会 301 到真人剧分类页，首页推荐改为解析首页 all（热播短剧）分区。
   async home(page = 1) {
     return { items: await homeTab("all"), page };

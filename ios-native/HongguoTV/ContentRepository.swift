@@ -30,6 +30,7 @@ struct StreamInfo: Codable {
     let url: String
     let key: [UInt8]?
     let quality: String
+    let episodeId: String
 }
 
 enum ContentError: LocalizedError, Equatable {
@@ -166,6 +167,26 @@ final class ContentRepository {
         let items = valid(rows.map(card))
         await cache?.saveList(kind: "home", scope: "all", page: page, items: items, categoriesBySeriesId: categoriesBySeries(from: rows))
         return CatalogPage(items: items, hasMore: !items.isEmpty && page < 100)
+    }
+
+    // MARK: - 首页轮播 Banner
+
+    /// 官网首页 loaderData.page.bannerList（横版大图 background_cover_pc）
+    func banners() async throws -> [Banner] {
+        let data = try await router("\(site)/")
+        guard let list = (data["page"] as? [String: Any])?["bannerList"] as? [Any] else {
+            throw ContentError.format("轮播数据不可用")
+        }
+        return list.compactMap { item in
+            let d = item as? [String: Any] ?? [:]
+            let sid = str(d, "series_id")
+            guard !sid.isEmpty else { return nil }
+            let pc = Self.cleanUrl(str(d, "background_cover_pc"))
+            let mobile = Self.cleanUrl(str(d, "background_cover"))
+            let image = pc.isEmpty ? mobile : pc
+            guard !image.isEmpty else { return nil }
+            return Banner(seriesId: sid, title: str(d, "series_name"), image: image)
+        }
     }
 
     private static let categoryConfig: [String: (name: String, kind: String, route: String)] = [
@@ -542,7 +563,7 @@ final class ContentRepository {
         let spadeA = str(item, "spade_a")
         let key: [UInt8]? = spadeA.isEmpty ? nil : try MediaCrypto.deriveKey(spadeA)
         let quality = selected.0 > 0 ? "\(selected.0)P" + (selected.0 > maxQuality ? "（兼容资源）" : "") : "自动"
-        return StreamInfo(url: url, key: key, quality: quality)
+        return StreamInfo(url: url, key: key, quality: quality, episodeId: id)
     }
 
     // MARK: - 演职人员规范化

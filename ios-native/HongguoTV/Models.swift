@@ -24,6 +24,15 @@ struct Episode: Codable, Identifiable, Hashable {
     let title: String
 }
 
+/// 首页轮播 Banner（横版大图 ~2.26:1，仅头部剧集）
+struct Banner: Identifiable, Hashable {
+    let seriesId: String
+    let title: String
+    /// PC 横版大图
+    let image: String
+    var id: String { seriesId }
+}
+
 struct Celebrity: Codable, Identifiable, Hashable {
     let id: String
     let name: String

@@ -14,53 +14,54 @@ struct SearchView: View {
     @State private var error: String?
     @FocusState private var fieldFocused: Bool
 
-    private let columns = [GridItem(.adaptive(minimum: 220), spacing: 26)]
+    private let columns = [GridItem(.adaptive(minimum: 230), spacing: 28)]
 
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 16) {
                     Image(systemName: "magnifyingglass")
-                        .font(.system(size: 26))
-                        .foregroundStyle(Theme.textTertiary)
+                        .font(.system(size: 22))
+                        .foregroundStyle(AppColors.textTertiary)
                     TextField("搜索剧名或关键词", text: $query)
-                        .font(.system(size: 26))
+                        .font(.system(size: 22))
                         .textFieldStyle(.plain)
                         .focused($fieldFocused)
                         .submitLabel(.search)
                         .onSubmit { runSearch() }
                 }
                 .padding(.horizontal, 22)
-                .padding(.vertical, 18)
-                .glassPanel(radius: 18)
-                .padding(.bottom, 26)
+                .padding(.vertical, 16)
+                .background(AppColors.surface)
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .padding(.bottom, 30)
 
                 if busy {
                     ProgressView().scaleEffect(1.3).frame(maxWidth: .infinity, minHeight: 300)
                 } else if let error {
-                    Text(error).font(.system(size: 22)).foregroundStyle(Theme.textSecondary)
+                    Text(error).font(AppFont.body).foregroundStyle(AppColors.textSecondary)
                         .frame(maxWidth: .infinity, minHeight: 200)
                 } else if !items.isEmpty {
                     Text("“\(submitted)” 的搜索结果")
-                        .font(.system(size: 30, weight: .heavy))
-                        .foregroundStyle(Theme.textPrimary)
-                        .padding(.bottom, 22)
-                    LazyVGrid(columns: columns, spacing: 30) {
+                        .font(AppFont.section)
+                        .foregroundStyle(AppColors.textPrimary)
+                        .padding(.bottom, 20)
+                    LazyVGrid(columns: columns, spacing: 34) {
                         ForEach(items) { series in
                             PosterCard(series: series) { onOpen(series) }
                         }
                     }
                 } else if !submitted.isEmpty {
                     Text("没有找到相关内容")
-                        .font(.system(size: 24))
-                        .foregroundStyle(Theme.textTertiary)
+                        .font(AppFont.body)
+                        .foregroundStyle(AppColors.textTertiary)
                         .frame(maxWidth: .infinity, minHeight: 200)
                 } else {
                     historySection
                     categorySection
                 }
             }
-            .padding(.horizontal, 72)
+            .padding(.horizontal, AppSpacing.edge)
             .padding(.bottom, 60)
         }
         .task { await loadHistory() }
@@ -72,24 +73,25 @@ struct SearchView: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
                 Text("搜索历史")
-                    .font(.system(size: 26, weight: .heavy))
-                    .foregroundStyle(Theme.textPrimary)
+                    .font(AppFont.section)
+                    .foregroundStyle(AppColors.textPrimary)
                 Spacer()
                 if !history.isEmpty {
                     Button {
                         clearHistory()
                     } label: {
                         Label("清除", systemImage: "trash")
-                            .font(.system(size: 18))
-                            .foregroundStyle(Theme.textTertiary)
+                            .font(AppFont.aux)
+                            .foregroundStyle(AppColors.textTertiary)
                     }
                     .buttonStyle(.plain)
+                    .focusLift(scale: 1.05, brighten: false)
                 }
             }
             if history.isEmpty {
                 Text("暂无搜索历史")
-                    .font(.system(size: 20))
-                    .foregroundStyle(Theme.textTertiary)
+                    .font(AppFont.bodySmall)
+                    .foregroundStyle(AppColors.textTertiary)
                     .frame(maxWidth: .infinity, minHeight: 120)
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -100,13 +102,15 @@ struct SearchView: View {
                                 runSearch()
                             } label: {
                                 Text(keyword)
-                                    .font(.system(size: 20, weight: .medium))
-                                    .foregroundStyle(Theme.textPrimary)
+                                    .font(AppFont.bodySmall)
+                                    .foregroundStyle(AppColors.textPrimary)
                                     .padding(.horizontal, 18)
                                     .padding(.vertical, 10)
-                                    .glassTile(radius: 16)
+                                    .background(AppColors.surface)
+                                    .clipShape(Capsule())
                             }
                             .buttonStyle(.plain)
+                            .focusLift(scale: 1.05, brighten: false)
                         }
                     }
                 }
@@ -120,12 +124,12 @@ struct SearchView: View {
     private var categorySection: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text("按分类浏览")
-                .font(.system(size: 26, weight: .heavy))
-                .foregroundStyle(Theme.textPrimary)
+                .font(AppFont.section)
+                .foregroundStyle(AppColors.textPrimary)
             if localCategories.isEmpty {
                 Text("浏览过剧集后自动积累分类标签")
-                    .font(.system(size: 20))
-                    .foregroundStyle(Theme.textTertiary)
+                    .font(AppFont.bodySmall)
+                    .foregroundStyle(AppColors.textTertiary)
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 14) {
@@ -134,19 +138,21 @@ struct SearchView: View {
                                 runLocalCategory(name)
                             } label: {
                                 Text(name)
-                                    .font(.system(size: 20, weight: .medium))
-                                    .foregroundStyle(Theme.textPrimary)
+                                    .font(AppFont.bodySmall)
+                                    .foregroundStyle(AppColors.textPrimary)
                                     .padding(.horizontal, 18)
                                     .padding(.vertical, 10)
-                                    .glassTile(selected: true, radius: 16, idleFill: Theme.accent.opacity(0.16))
+                                    .background(AppColors.surface)
+                                    .clipShape(Capsule())
                             }
                             .buttonStyle(.plain)
+                            .focusLift(scale: 1.05, brighten: false)
                         }
                     }
                 }
             }
         }
-        .padding(.top, 26)
+        .padding(.top, 30)
     }
 
     private func loadHistory() async {

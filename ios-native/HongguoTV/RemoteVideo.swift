@@ -135,6 +135,14 @@ final class RemoteVideo {
         if isClosed { throw ContentError.network("播放请求已取消") }
         guard let prepared else { throw ContentError.format("播放流未准备") }
         if start >= total { return [] }
+
+        // 磁盘缓存命中：直接返回已解密字节，不走网络也不再解密
+        if let cached = VideoDiskCache.shared.read(episodeId: info.episodeId,
+                                                   offset: Int64(start),
+                                                   length: length) {
+            return [UInt8](cached)
+        }
+
         let end = min(total, start &+ UInt64(length))
         let prefixEnd = min(end, UInt64(prefix.count))
         let available = Int(prefixEnd >= start ? prefixEnd - start : 0)
@@ -145,7 +153,12 @@ final class RemoteVideo {
         } else {
             raw = cached
         }
-        return try MediaCrypto.decrypt(raw, start: start, key: info.key, prepared: prepared)
+        let decrypted = try MediaCrypto.decrypt(raw, start: start, key: info.key, prepared: prepared)
+        // 写回磁盘缓存（已解密字节）
+        VideoDiskCache.shared.write(episodeId: info.episodeId,
+                                    offset: Int64(start),
+                                    data: Data(decrypted))
+        return decrypted
     }
 
     func close() {

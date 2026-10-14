@@ -1,9 +1,9 @@
 import SwiftUI
 
-// MARK: - 根视图：Infuse 式顶部 Tab 导航
+// MARK: - 根视图：电影级深色画布 + 顶部居中菜单（Apple TV+ 式克制导航）
 
 enum AppTab: String, CaseIterable {
-    case home = "推荐"
+    case home = "首页"
     case search = "搜索"
     case library = "收藏"
     case recent = "最近观看"
@@ -23,17 +23,16 @@ enum AppTab: String, CaseIterable {
 struct ContentView: View {
     @State private var tab: AppTab = .home
     @State private var detailSeries: Series? = nil
-    @State private var detailPath: AppTab? = nil
 
     var body: some View {
         VStack(spacing: 0) {
-            TabBar(selection: $tab)
-                .padding(.horizontal, 72)
-                .padding(.top, 40)
-                .padding(.bottom, 24)
+            TopBar(selection: $tab)
+                .padding(.horizontal, AppSpacing.edge)
+                .padding(.top, 36)
+                .padding(.bottom, 8)
             content
         }
-        .background(Theme.backgroundGradient.ignoresSafeArea())
+        .background(AppColors.background.ignoresSafeArea())
         .fullScreenCover(item: $detailSeries) { series in
             DetailView(series: series)
         }
@@ -56,57 +55,66 @@ struct ContentView: View {
     }
 }
 
-// MARK: - 顶部 Tab 栏（居中 + 长方形毛玻璃包裹；聚焦/选中为 tvOS26 毛玻璃块）
+// MARK: - 顶部栏：左品牌标识 + 居中菜单胶囊
 
-struct TabBar: View {
+struct TopBar: View {
     @Binding var selection: AppTab
     @FocusState private var focusedTab: AppTab?
 
     var body: some View {
-        HStack(spacing: 24) {
-            HStack(spacing: 12) {
-                Image(systemName: "play.rectangle.fill")
-                    .font(.system(size: 26, weight: .bold))
-                    .foregroundStyle(Theme.accent)
-                Text("红果 TV")
-                    .font(.system(size: 24, weight: .heavy))
-                    .foregroundStyle(.white)
+        HStack(spacing: 0) {
+            // 左：品牌
+            HStack(spacing: 10) {
+                Image(systemName: "play.fill")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundStyle(AppColors.textPrimary)
+                Text("红果短剧")
+                    .font(.system(size: 23, weight: .semibold))
+                    .foregroundStyle(AppColors.textPrimary)
             }
-            .padding(.trailing, 6)
 
-            ForEach(AppTab.allCases, id: \.self) { t in
-                Button {
-                    selection = t
-                } label: {
-                    HStack(spacing: 8) {
-                        Image(systemName: t.icon)
-                        Text(t.rawValue)
-                    }
-                    .font(.system(size: 21, weight: .semibold))
-                    .foregroundStyle(selection == t ? Color.white : Theme.textSecondary)
-                    .padding(.horizontal, 20)
-                    .padding(.vertical, 11)
-                    .glassTile(selected: selection == t, radius: 18)
+            Spacer()
+
+            // 中：菜单
+            HStack(spacing: 6) {
+                ForEach(AppTab.allCases, id: \.self) { t in
+                    tabPill(t)
                 }
-                .buttonStyle(TabButtonStyle(selected: selection == t))
-                .focused($focusedTab, equals: t)
             }
+
+            Spacer()
         }
-        .padding(.horizontal, 34)
-        .padding(.vertical, 16)
-        .glassPanel(radius: 30)
-        .frame(maxWidth: .infinity) // 整条毛玻璃居中
+    }
+
+    private func tabPill(_ t: AppTab) -> some View {
+        let selected = selection == t
+        return Button {
+            selection = t
+        } label: {
+            Text(t.rawValue)
+                .font(.system(size: 20, weight: selected ? .semibold : .regular))
+                .foregroundStyle(selected ? AppColors.background : AppColors.textSecondary)
+                .padding(.horizontal, 22)
+                .padding(.vertical, 9)
+                .background(selected ? AppColors.textPrimary : Color.clear)
+                .clipShape(Capsule())
+        }
+        .buttonStyle(TabPillStyle())
+        .focused($focusedTab, equals: t)
     }
 }
 
-struct TabButtonStyle: ButtonStyle {
-    var selected: Bool
+/// 菜单胶囊焦点：聚焦时高亮表面 + 轻微放大
+struct TabPillStyle: ButtonStyle {
     @Environment(\.isFocused) private var isFocused
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .scaleEffect(isFocused ? 1.08 : 1.0)
-            .shadow(color: .black.opacity(0.5), radius: 12, y: 6)
-            .animation(.spring(response: 0.2, dampingFraction: 0.72), value: isFocused)
+            .background(isFocused ? AppColors.surfaceHigh : Color.clear)
+            .clipShape(Capsule())
+            .focusEffectDisabled()
+            .scaleEffect(isFocused ? 1.06 : 1.0)
+            .shadow(color: .black.opacity(isFocused ? 0.45 : 0), radius: 12, y: 6)
+            .animation(AppMotion.focus, value: isFocused)
     }
 }

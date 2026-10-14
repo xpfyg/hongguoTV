@@ -17,9 +17,9 @@ struct LibraryView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 Text(mode.rawValue)
-                    .font(.system(size: 30, weight: .heavy))
-                    .foregroundStyle(Theme.textPrimary)
-                    .padding(.bottom, 22)
+                    .font(.system(size: 32, weight: .semibold))
+                    .foregroundStyle(AppColors.textPrimary)
+                    .padding(.bottom, 24)
 
                 if items.isEmpty {
                     emptyHint(mode == .favorites
@@ -29,7 +29,7 @@ struct LibraryView: View {
                     grid(items)
                 }
             }
-            .padding(.horizontal, 72)
+            .padding(.horizontal, AppSpacing.edge)
             .padding(.bottom, 60)
         }
         .task(id: mode) { await load() }
@@ -43,7 +43,7 @@ struct LibraryView: View {
     }
 
     private func grid(_ list: [Series]) -> some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 26)], spacing: 30) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 230), spacing: 28)], spacing: 34) {
             ForEach(list) { series in
                 PosterCard(series: series) { onOpen(series) }
             }
@@ -54,10 +54,10 @@ struct LibraryView: View {
         VStack(spacing: 14) {
             Image(systemName: mode == .favorites ? "star" : "clock")
                 .font(.system(size: 44))
-                .foregroundStyle(Theme.textTertiary)
+                .foregroundStyle(AppColors.textTertiary)
             Text(text)
-                .font(.system(size: 22))
-                .foregroundStyle(Theme.textTertiary)
+                .font(AppFont.body)
+                .foregroundStyle(AppColors.textTertiary)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity, minHeight: 320)

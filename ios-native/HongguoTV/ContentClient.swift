@@ -25,6 +25,11 @@ struct ContentClient {
         try await repo.home(page: page).items
     }
 
+    /// 首页轮播 Banner（横版大图）
+    func banners() async throws -> [Banner] {
+        try await repo.banners()
+    }
+
     func category(typeId: String, slug: String? = nil, page: Int) async throws -> (name: String, subCategories: [SubCategory], items: [Series]) {
         try await repo.category(typeId: typeId, slug: slug, page: page)
     }

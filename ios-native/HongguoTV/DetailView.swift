@@ -1,7 +1,7 @@
 import SwiftUI
 import AVKit
 
-// MARK: - 详情页（Infuse 风格：背景海报模糊 + 前景信息 + 选集）
+// MARK: - 详情页：背景海报压暗 + 剧名/简介/播放操作突出 + 选集
 
 struct DetailView: View {
     @Environment(\.dismiss) private var dismiss
@@ -22,6 +22,7 @@ struct DetailView: View {
     @State private var resumeEpisodeId: String?
     @State private var watchedIds: Set<String> = []
     @FocusState private var playFocused: Bool
+    @AppStorage("immersiveModeEnabled") private var immersiveMode = true
 
     init(series: Series) {
         self.series = series
@@ -30,46 +31,53 @@ struct DetailView: View {
 
     var body: some View {
         ZStack {
-            // 背景大海报（模糊压暗）
+            // 背景大海报（模糊压暗 → 近黑画布）
             AsyncImage(url: URL(string: current.cover)) { phase in
                 if case .success(let image) = phase {
                     image.resizable().scaledToFill()
                 }
             }
-            .blur(radius: 40)
+            .blur(radius: 44)
             .overlay(
-                LinearGradient(colors: [Color.black.opacity(0.55), Color.black.opacity(0.85)],
+                LinearGradient(colors: [Color.black.opacity(0.62), Color(hex: 0x0B0B0B).opacity(0.92)],
                                startPoint: .top, endPoint: .bottom)
             )
             .ignoresSafeArea()
 
-            // 固定布局（当前剧集数 ≤ ~70 集一屏可容纳；超长选集后续改为局部滚动）
+            // 固定布局：上为「大海报 + 剧名/简介/操作」主视觉区，下为紧凑选集
             VStack(alignment: .leading, spacing: 0) {
-                HStack(alignment: .top, spacing: 48) {
-                    // 上：竖版海报
-                    PosterImage(url: current.cover, corner: 20)
-                        .frame(width: 200, height: 300)
+                HStack(alignment: .top, spacing: 56) {
+                    // 左：放大的竖版海报
+                    PosterImage(url: current.cover, corner: 14)
+                        .frame(width: 280, height: 420)
+                        .shadow(color: .black.opacity(0.45), radius: 30, x: 0, y: 12)
 
-                        // 右：上为名称/简介/操作，下为选集
-                        VStack(alignment: .leading, spacing: 0) {
-                            VStack(alignment: .leading, spacing: 18) {
-                                Text(current.title)
-                                    .font(.system(size: 46, weight: .heavy))
-                                    .foregroundStyle(Theme.textPrimary)
-                                    .lineLimit(1)
-                                HStack(spacing: 12) {
+                    // 右：名称/简介/操作/演职
+                    VStack(alignment: .leading, spacing: 0) {
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text(current.title)
+                                .font(AppFont.detailTitle)
+                                .foregroundStyle(AppColors.textPrimary)
+                                .lineLimit(2)
+                                .frame(maxWidth: 760, alignment: .leading)
+                            HStack(spacing: 12) {
+                                if !current.badge.isEmpty {
                                     badge(current.badge)
-                                    Text(current.tags)
-                                        .font(.system(size: 22, weight: .medium))
-                                        .foregroundStyle(Theme.textSecondary)
                                 }
-                                Text(current.description)
-                                    .font(.system(size: 22))
-                                    .foregroundStyle(Theme.textSecondary)
-                                    .lineLimit(3)
-                                    .frame(maxWidth: 720, alignment: .leading)
+                                if !current.tags.isEmpty {
+                                    Text(current.tags)
+                                        .font(AppFont.bodySmall)
+                                        .foregroundStyle(AppColors.textSecondary)
+                                }
+                            }
+                            Text(current.description)
+                                .font(AppFont.body)
+                                .foregroundStyle(AppColors.textSecondary)
+                                .lineLimit(5)
+                                .multilineTextAlignment(.leading)
+                                .frame(maxWidth: 780, alignment: .leading)
 
-                                HStack(spacing: 20) {
+                                HStack(spacing: 18) {
                                     Button {
                                         play(resumeEpisodeId, fresh: false)
                                     } label: {
@@ -82,7 +90,7 @@ struct DetailView: View {
                                         Button { play(nil, fresh: true) } label: {
                                             Label("从头播放", systemImage: "arrow.counterclockwise")
                                         }
-                                        .glassAction()
+                                        .secondaryAction()
                                     }
 
                                     Button {
@@ -90,15 +98,16 @@ struct DetailView: View {
                                     } label: {
                                         Label(favorite ? "已收藏" : "收藏", systemImage: "star.fill")
                                     }
-                                    .glassAction()
+                                    .secondaryAction()
                                 }
+                                .padding(.top, 8)
 
                                 if playbackBusy {
                                     ProgressView().scaleEffect(1.2).padding(.top, 6)
                                 } else if let playbackError {
                                     Text(playbackError)
-                                        .font(.system(size: 20))
-                                        .foregroundStyle(Theme.accent)
+                                        .font(AppFont.bodySmall)
+                                        .foregroundStyle(AppColors.accent)
                                         .padding(.top, 4)
                                 }
 
@@ -106,8 +115,8 @@ struct DetailView: View {
                                 if let detail, let celes = detail.celebrities, !celes.isEmpty {
                                     VStack(alignment: .leading, spacing: 10) {
                                         Text("演职人员")
-                                            .font(.system(size: 20, weight: .semibold))
-                                            .foregroundStyle(Theme.textSecondary)
+                                            .font(AppFont.bodySmall)
+                                            .foregroundStyle(AppColors.textSecondary)
                                         ScrollView(.horizontal, showsIndicators: false) {
                                             HStack(spacing: 18) {
                                                 ForEach(celes) { c in
@@ -118,19 +127,21 @@ struct DetailView: View {
                                                             AvatarImage(url: c.avatar, name: c.name, size: 44)
                                                             VStack(spacing: 1) {
                                                                 Text(c.name)
-                                                                    .font(.system(size: 15, weight: .semibold))
-                                                                    .foregroundStyle(Theme.textPrimary)
+                                                                    .font(AppFont.aux)
+                                                                    .foregroundStyle(AppColors.textPrimary)
                                                                     .lineLimit(1)
                                                                 if !c.role.isEmpty {
                                                                     Text(c.role)
-                                                                        .font(.system(size: 12))
-                                                                        .foregroundStyle(Theme.textSecondary)
+                                                                        .font(AppFont.tag)
+                                                                        .foregroundStyle(AppColors.textSecondary)
                                                                         .lineLimit(1)
                                                                 }
                                                             }
                                                             .frame(width: 88)
                                                         }
                                                     }
+                                                    .buttonStyle(.plain)
+                                                    .focusLift(scale: 1.05, brighten: false)
                                                 }
                                             }
                                         }
@@ -147,8 +158,8 @@ struct DetailView: View {
                         if let detail, showEpisodes {
                             if !detail.episodes.isEmpty {
                                 Text("选集")
-                                    .font(.system(size: 28, weight: .heavy))
-                                    .foregroundStyle(Theme.textPrimary)
+                                    .font(AppFont.section)
+                                    .foregroundStyle(AppColors.textPrimary)
                                 ScrollViewReader { proxy in
                                     ScrollView(.vertical, showsIndicators: false) {
                                         episodesGrid(detail.episodes)
@@ -162,20 +173,20 @@ struct DetailView: View {
                                             proxy.scrollTo("ep-top", anchor: .top)
                                         }
                                     }
-                                    .frame(height: 620)
+                                    .frame(height: 300)
                                 }
                             }
                         } else if busy {
                             ProgressView().scaleEffect(1.3)
                                 .frame(maxWidth: .infinity, minHeight: 160)
                         } else if let error {
-                            Text(error).font(.system(size: 22)).foregroundStyle(Theme.accent)
+                            Text(error).font(AppFont.body).foregroundStyle(AppColors.accent)
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.top, 20)
                 }
-                .padding(.horizontal, 72)
+                .padding(.horizontal, AppSpacing.edge)
                 .padding(.bottom, 40)
                 .opacity(selectedActor == nil ? 1 : 0.12)
                 .allowsHitTesting(selectedActor == nil)
@@ -207,7 +218,10 @@ struct DetailView: View {
             playFocused = true
         }
         .fullScreenCover(item: $playingEpisode) { episode in
-            if let playback {
+            if immersiveMode, let detail {
+                ImmersivePlayerBridge(series: current, episodes: detail.episodes,
+                                      initial: episode, watchedIds: watchedIds)
+            } else if let playback {
                 NativePlayer(playback: playback, series: current, episode: episode)
             }
         }
@@ -215,11 +229,11 @@ struct DetailView: View {
 
     private func badge(_ text: String) -> some View {
         Text(text)
-            .font(.system(size: 18, weight: .bold))
+            .font(AppFont.aux)
+            .foregroundStyle(AppColors.textSecondary)
             .padding(.horizontal, 12)
             .padding(.vertical, 5)
-            .foregroundStyle(Color.black)
-            .background(Theme.accent)
+            .background(AppColors.surface)
             .clipShape(Capsule())
     }
 
@@ -356,7 +370,7 @@ struct NativePlayer: View {
     }
 }
 
-// MARK: - 选集单元格（轻量聚焦：保留毛玻璃，不放大）
+// MARK: - 选集单元格（深色表面；聚焦柔和放大，续播用点缀蓝描边）
 
 struct EpisodeCell: View {
     let ep: Episode
@@ -372,32 +386,32 @@ struct EpisodeCell: View {
             VStack(spacing: 6) {
                 ZStack(alignment: .topTrailing) {
                     Text("\(ep.number)")
-                        .font(.system(size: 22, weight: .bold))
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundStyle(AppColors.textPrimary)
                         .opacity(isWatched ? 0.55 : 1)
                     if isWatched {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: 14))
-                            .foregroundStyle(Theme.accent)
+                            .foregroundStyle(AppColors.accent)
                             .padding(6)
                     }
                 }
                 if !ep.title.isEmpty {
                     Text(ep.title)
-                        .font(.system(size: 15))
-                        .foregroundStyle(Theme.textTertiary)
+                        .font(AppFont.aux)
+                        .foregroundStyle(AppColors.textTertiary)
                         .lineLimit(1)
                 }
             }
             .frame(width: 104, height: 72)
-            .background(.ultraThinMaterial)
-            .overlay(
-                RoundedRectangle(cornerRadius: 14)
-                    .stroke(isResume ? Theme.accent : (focused ? Color.white.opacity(0.9) : Theme.glassStroke),
-                            lineWidth: isResume || focused ? 2.5 : 1.5)
-            )
-            .clipShape(RoundedRectangle(cornerRadius: 14))
+            .background(isResume ? AppColors.accent.opacity(0.16) : AppColors.surface)
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .scaleEffect(focused ? 1.08 : 1.0)
+            .shadow(color: .black.opacity(focused ? 0.5 : 0), radius: focused ? 16 : 0, y: 8)
+            .animation(AppMotion.focus, value: focused)
         }
         .buttonStyle(.plain)
+        .focusEffectDisabled()
     }
 }
 
@@ -416,11 +430,11 @@ struct ActorWorksView: View {
     @State private var noProfile = false
     @FocusState private var returnFocused: Bool
 
-    private let columns = [GridItem(.adaptive(minimum: 220), spacing: 26)]
+    private let columns = [GridItem(.adaptive(minimum: 230), spacing: 28)]
 
     var body: some View {
         ZStack {
-            Theme.backgroundGradient.ignoresSafeArea()
+            AppColors.background.ignoresSafeArea()
 
             VStack(alignment: .leading, spacing: 0) {
                 // 返回
@@ -428,11 +442,12 @@ struct ActorWorksView: View {
                     onClose()
                 } label: {
                     Label("返回", systemImage: "chevron.left")
-                        .font(.system(size: 24, weight: .semibold))
-                        .foregroundStyle(Theme.textPrimary)
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundStyle(AppColors.textPrimary)
                 }
                 .buttonStyle(.plain)
                 .focused($returnFocused)
+                .focusLift(scale: 1.05)
                 .padding(.top, 30)
 
                 // 演员信息
@@ -442,17 +457,17 @@ struct ActorWorksView: View {
                         .frame(width: 128, height: 128)
                     VStack(alignment: .leading, spacing: 10) {
                         Text(actor.name)
-                            .font(.system(size: 46, weight: .heavy))
-                            .foregroundStyle(Theme.textPrimary)
+                            .font(AppFont.detailTitle)
+                            .foregroundStyle(AppColors.textPrimary)
                         if let profile, !profile.subtitle.isEmpty {
                             Text(profile.subtitle)
-                                .font(.system(size: 22))
-                                .foregroundStyle(Theme.textSecondary)
+                                .font(AppFont.body)
+                                .foregroundStyle(AppColors.textSecondary)
                         }
                         if let profile, !profile.description.isEmpty {
                             Text(profile.description)
-                                .font(.system(size: 20))
-                                .foregroundStyle(Theme.textTertiary)
+                                .font(AppFont.bodySmall)
+                                .foregroundStyle(AppColors.textTertiary)
                                 .lineLimit(2)
                                 .frame(maxWidth: 760, alignment: .leading)
                         }
@@ -461,10 +476,10 @@ struct ActorWorksView: View {
                 .padding(.top, 24)
 
                 Text("相关剧集")
-                    .font(.system(size: 30, weight: .heavy))
-                    .foregroundStyle(Theme.textPrimary)
+                    .font(AppFont.section)
+                    .foregroundStyle(AppColors.textPrimary)
                     .padding(.top, 28)
-                    .padding(.bottom, 22)
+                    .padding(.bottom, 18)
 
                 if busy && items.isEmpty {
                     ProgressView().scaleEffect(1.4).frame(maxWidth: .infinity, minHeight: 360)
@@ -472,19 +487,19 @@ struct ActorWorksView: View {
                     VStack(spacing: 14) {
                         Image(systemName: "exclamationmark.triangle")
                             .font(.system(size: 40))
-                            .foregroundStyle(Theme.textTertiary)
-                        Text(error).font(.system(size: 22)).foregroundStyle(Theme.textSecondary)
+                            .foregroundStyle(AppColors.textTertiary)
+                        Text(error).font(AppFont.body).foregroundStyle(AppColors.textSecondary)
                     }
                     .frame(maxWidth: .infinity, minHeight: 360)
                 } else if items.isEmpty {
                     Text("未找到相关剧集")
-                        .font(.system(size: 22))
-                        .foregroundStyle(Theme.textTertiary)
+                        .font(AppFont.body)
+                        .foregroundStyle(AppColors.textTertiary)
                         .frame(maxWidth: .infinity, minHeight: 360)
                 } else {
                     ScrollViewReader { proxy in
                         ScrollView(.vertical, showsIndicators: false) {
-                            LazyVGrid(columns: columns, spacing: 30) {
+                            LazyVGrid(columns: columns, spacing: 34) {
                                 ForEach(items) { s in
                                     PosterCard(series: s) {
                                         onOpenSeries(s)
@@ -505,11 +520,11 @@ struct ActorWorksView: View {
                                 proxy.scrollTo("works-top", anchor: .top)
                             }
                         }
-                        .frame(height: 620)
+                        .frame(height: 560)
                     }
                 }
             }
-            .padding(.horizontal, 72)
+            .padding(.horizontal, AppSpacing.edge)
         }
         .task {
             await load()
