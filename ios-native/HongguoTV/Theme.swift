@@ -158,7 +158,6 @@ struct PosterCardStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .focusEffectDisabled()
-            .hoverEffect(.highlight)
             .scaleEffect(isFocused ? 1.06 : 1.0)
             .shadow(color: .black.opacity(isFocused ? 0.6 : 0.28),
                     radius: isFocused ? 26 : 10, y: isFocused ? 16 : 6)

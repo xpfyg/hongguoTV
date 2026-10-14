@@ -548,7 +548,6 @@ struct ResumeCard: View {
 
 struct PosterCard: View {
     let series: Series
-    /// 横向内容架使用固定宽度；网格中传 nil 由网格单元决定宽度
     var width: CGFloat? = nil
     let onSelect: () -> Void
     @State private var favorite = false
@@ -557,7 +556,7 @@ struct PosterCard: View {
         Button {
             onSelect()
         } label: {
-            VStack(alignment: .leading, spacing: 10) {
+            VStack(spacing: 10) {
                 ZStack(alignment: .topTrailing) {
                     PosterImage(url: series.cover, corner: 12)
                         .aspectRatio(2 / 3, contentMode: .fit)
@@ -572,11 +571,9 @@ struct PosterCard: View {
                             .padding(10)
                     }
                 }
-                Text(series.title)
-                    .font(AppFont.cardTitle)
-                    .foregroundStyle(AppColors.textPrimary)
-                    .lineLimit(1)
-                    .frame(width: width, alignment: .leading)
+                .hoverEffect(.highlight)
+
+                CardTitle(text: series.title, width: width)
             }
         }
         .buttonStyle(PosterCardStyle())
@@ -584,5 +581,44 @@ struct PosterCard: View {
             let api = ContentClient()
             favorite = api.cache.isFavorite(seriesId: series.id)
         }
+    }
+}
+
+/// 剧集名：居中；聚焦高亮，未选中偏灰。长名聚焦时水平滚动。
+private struct CardTitle: View {
+    let text: String
+    let width: CGFloat?
+    @Environment(\.isFocused) private var isFocused
+    @State private var offset: CGFloat = 0
+    @State private var timer: Timer?
+
+    var body: some View {
+        Text(text)
+            .font(AppFont.cardTitle)
+            .foregroundStyle(isFocused ? AppColors.textPrimary : AppColors.textTertiary)
+            .lineLimit(1)
+            .frame(width: width, alignment: .center)
+            .offset(x: offset, y: isFocused ? 14 : 0)
+            .animation(.easeOut(duration: 0.25), value: isFocused)
+            .onChange(of: isFocused) { focused in
+                if focused { startMarquee() } else { stopMarquee() }
+            }
+    }
+
+    private func startMarquee() {
+        stopMarquee()
+        // 简单 marquee：从 0 滚到 -30，再回 0，循环
+        timer = Timer.scheduledTimer(withTimeInterval: 0.04, repeats: true) { t in
+            offset -= 1.2
+            if offset < -120 {
+                offset = 30
+            }
+        }
+    }
+
+    private func stopMarquee() {
+        timer?.invalidate()
+        timer = nil
+        offset = 0
     }
 }
