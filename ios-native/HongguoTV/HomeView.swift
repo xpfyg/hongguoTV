@@ -48,7 +48,7 @@ struct HomeView: View {
     @FocusState private var focusedCategory: String?
     @FocusState private var subFocus: String? // "all" = 全部小分类
 
-    private let columns = [GridItem(.adaptive(minimum: 230), spacing: 28)]
+    private let columns = [GridItem(.adaptive(minimum: 230), spacing: 40)]
 
     var body: some View {
         ScrollView {
@@ -76,7 +76,7 @@ struct HomeView: View {
                 if !homeList.isEmpty {
                     Shelf(title: "热门短剧") {
                         ForEach(homeList.prefix(16)) { series in
-                            PosterCard(series: series, width: 240) { onOpen(series) }
+                            PosterCard(series: series) { onOpen(series) }
                         }
                     }
                     .padding(.bottom, AppSpacing.shelf)
@@ -220,7 +220,7 @@ struct HomeView: View {
     // MARK: - 分类网格
 
     private var posterGrid: some View {
-        LazyVGrid(columns: columns, spacing: 34) {
+        LazyVGrid(columns: columns, spacing: 48) {
             ForEach(items) { series in
                 PosterCard(series: series) {
                     onOpen(series)
@@ -578,9 +578,8 @@ struct PosterCard: View {
                     .lineLimit(1)
                     .frame(width: width, alignment: .leading)
             }
-            .hoverEffect(.highlight)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PosterCardStyle())
         .onAppear {
             let api = ContentClient()
             favorite = api.cache.isFavorite(seriesId: series.id)
