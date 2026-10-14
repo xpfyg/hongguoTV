@@ -36,6 +36,14 @@ struct ContentView: View {
         .fullScreenCover(item: $detailSeries) { series in
             DetailView(series: series)
         }
+        // TEMP-DEBUG-HOOK: 端到端验证用，验完删除
+        .task {
+            if ProcessInfo.processInfo.arguments.contains("-AUTOPLAY_TEST") {
+                try? await Task.sleep(nanoseconds: 4_000_000_000)
+                let api = ContentClient()
+                if let s = api.cache.recentSeries(limit: 1).first { detailSeries = s }
+            }
+        }
     }
 
     @ViewBuilder

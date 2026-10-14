@@ -216,9 +216,36 @@ private struct PlayerLayerView: UIViewRepresentable {
 final class ImmersiveHostVC: UIViewController {
     var onPlayPause: (() -> Void)?
     override var canBecomeFirstResponder: Bool { true }
+    // TEMP-DEBUG-HOOK: 端到端验证用，验完删除
+    private func dumpLayout() {
+        var out = "===== [\(Date())] HVC bounds=\(view.bounds) safeArea=\(view.safeAreaInsets)\n"
+        func dump(_ v: UIView, _ d: Int) {
+            let tag = v.layer is AVPlayerLayer ? " [AVPlayerLayer]" : ""
+            out += String(repeating: "  ", count: d) + "\(type(of: v)) frame=\(v.frame)\n"
+            for s in v.subviews { dump(s, d + 1) }
+        }
+        dump(view, 0)
+        if let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+            let url = dir.appendingPathComponent("layout-diag.txt")
+            if let h = try? FileHandle(forWritingTo: url) {
+                h.seekToEndOfFile(); h.write(out.data(using: .utf8)!); try? h.close()
+            } else {
+                try? out.write(to: url, atomically: true, encoding: .utf8)
+            }
+        }
+    }
+
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         becomeFirstResponder()
+        // TEMP-DEBUG-HOOK: 端到端验证用，验完删除（等 SwiftUI 树稳定后 dump）
+        if ProcessInfo.processInfo.arguments.contains("-AUTOPLAY_TEST") {
+            for delay in [2.0, 5.0, 9.0] {
+                DispatchQueue.main.asyncAfter(deadline: .now() + delay) { [weak self] in
+                    self?.dumpLayout()
+                }
+            }
+        }
     }
     override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent?) {
         var handled = false
@@ -341,9 +368,28 @@ struct ImmersiveRootView: View {
                         .transition(.opacity.animation(.easeInOut(duration: 0.25)))
                 }
             }
+            // TEMP-DEBUG-HOOK: 端到端验证用，验完删除
+            .onAppear { logLayout(geo, "appear") }
+            .onChange(of: model.videoSize) { _, v in logLayout(geo, "videoSize=\(v)") }
+            .onChange(of: model.backgroundImage != nil) { _, has in logLayout(geo, "bgImage=\(has)") }
+            .onChange(of: model.isLoading) { _, l in logLayout(geo, "loading=\(l)") }
+            .onChange(of: model.isPaused) { _, p in logLayout(geo, "paused=\(p)") }
         }
         .background(AppColors.background.ignoresSafeArea())
         .task { await model.start() }
+    }
+
+    // TEMP-DEBUG-HOOK: 端到端验证用，验完删除
+    private func logLayout(_ geo: GeometryProxy, _ tag: String) {
+        let f = videoSize(in: geo)
+        let line = "[\(Date())] \(tag) geo=\(geo.size) videoSize=\(model.videoSize) isPortrait=\(isPortrait) frame=\(f)\n"
+        if let dir = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first {
+            if let h = try? FileHandle(forWritingTo: dir.appendingPathComponent("layout-diag.txt")) {
+                h.seekToEndOfFile(); h.write(line.data(using: .utf8)!); try? h.close()
+            } else {
+                try? line.write(to: dir.appendingPathComponent("layout-diag.txt"), atomically: true, encoding: .utf8)
+            }
+        }
     }
 
     private var isPortrait: Bool {
@@ -426,6 +472,7 @@ struct ImmersiveRootView: View {
                                 .background(ep.id == model.currentEpisode.id ? AppColors.surfaceHigh : AppColors.surfaceHigh.opacity(0.4))
                                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                         }
+                        .buttonStyle(.plain)
                         .focused($focusedPanel, equals: .episode)
                         .focusLift(scale: 1.1)
                     }

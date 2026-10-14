@@ -209,6 +209,11 @@ struct DetailView: View {
         .task(id: current.id) {
             await loadDetail()
             await loadLocalState()
+            // TEMP-DEBUG-HOOK: 端到端验证用，验完删除
+            if ProcessInfo.processInfo.arguments.contains("-AUTOPLAY_TEST") {
+                try? await Task.sleep(nanoseconds: 600_000_000)
+                play(resumeEpisodeId, fresh: false)
+            }
             try? await Task.sleep(nanoseconds: 350_000_000)
             playFocused = true
             try? await Task.sleep(nanoseconds: 150_000_000)
@@ -370,7 +375,10 @@ struct NativePlayer: View {
     }
 }
 
-// MARK: - 选集单元格（深色表面；聚焦柔和放大，续播用点缀蓝描边）
+// MARK: - 选集单元格（裸内容 + 系统玻璃焦点）
+// 设计约定：容器层交给系统（tvOS 26 玻璃板 = 焦点底板），内容层自己做
+// （聚焦时数字提亮加粗、标题提亮）；不再垫自己的背景/圆角/缩放——
+// 焦点容器只能有一个主人，否则玻璃板只剩一圈边缘，就是之前的"毛玻璃边款"。
 
 struct EpisodeCell: View {
     let ep: Episode
@@ -386,9 +394,8 @@ struct EpisodeCell: View {
             VStack(spacing: 6) {
                 ZStack(alignment: .topTrailing) {
                     Text("\(ep.number)")
-                        .font(.system(size: 22, weight: .semibold))
-                        .foregroundStyle(AppColors.textPrimary)
-                        .opacity(isWatched ? 0.55 : 1)
+                        .font(.system(size: 22, weight: focused ? .bold : .semibold))
+                        .foregroundStyle(numberColor)
                     if isWatched {
                         Image(systemName: "checkmark.circle.fill")
                             .font(.system(size: 14))
@@ -399,19 +406,22 @@ struct EpisodeCell: View {
                 if !ep.title.isEmpty {
                     Text(ep.title)
                         .font(AppFont.aux)
-                        .foregroundStyle(AppColors.textTertiary)
+                        .foregroundStyle(focused ? AppColors.textSecondary : AppColors.textTertiary)
                         .lineLimit(1)
                 }
             }
             .frame(width: 104, height: 72)
-            .background(isResume ? AppColors.accent.opacity(0.16) : AppColors.surface)
-            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-            .scaleEffect(focused ? 1.08 : 1.0)
-            .shadow(color: .black.opacity(focused ? 0.5 : 0), radius: focused ? 16 : 0, y: 8)
+            .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
             .animation(AppMotion.focus, value: focused)
         }
         .buttonStyle(.plain)
-        .focusEffectDisabled()
+    }
+
+    /// 常态弱化、聚焦提亮、续播用点缀蓝（不再依赖底色块，避免和玻璃板叠底）
+    private var numberColor: Color {
+        if focused { return AppColors.textPrimary }
+        if isResume { return AppColors.accent }
+        return isWatched ? AppColors.textTertiary : AppColors.textSecondary
     }
 }
 

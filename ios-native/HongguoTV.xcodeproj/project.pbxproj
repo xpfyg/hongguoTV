@@ -18,6 +18,7 @@
 		489C75EE5216B1A8248E180E /* VideoDiskCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45A4A209EF7C22F00283E686 /* VideoDiskCache.swift */; };
 		4B4CFA40956C5A215BEE9F8B /* CacheStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B222315974A78008C68A3B27 /* CacheStore.swift */; };
 		524F51AEC0CCC0EB42ADB839 /* VendorConstants.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A3038D4B99AEF099576FD0B /* VendorConstants.swift */; };
+		54246367524AE82CCE137D08 /* icon.png in Resources */ = {isa = PBXBuildFile; fileRef = 9099CCB9DE27057A7A73E462 /* icon.png */; };
 		5B1D2A244F666B3F9A17DE3B /* sm3.c in Sources */ = {isa = PBXBuildFile; fileRef = 15EDEF0EB644ABEDCE217DCE /* sm3.c */; };
 		61D09C4F970603F3FE10B672 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D238AF3905F5297600B10E40 /* HomeView.swift */; };
 		628DA491C6D887FC812921CB /* DetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52DBAF6E25F9E9D7ACCAD1FA /* DetailView.swift */; };
@@ -36,6 +37,7 @@
 		C412850C4156434C699B0C81 /* ContentClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5FC411DBC69BD8F8BADCDE1 /* ContentClient.swift */; };
 		CBC41FE9FCE0EB241E08C4B0 /* ImmersivePlayerLayoutTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BE799AC4CCC7F8C015A537B7 /* ImmersivePlayerLayoutTests.swift */; };
 		D033EF76EDEB347FC5C336D6 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = E63697701D9B00A619152232 /* Models.swift */; };
+		D606C386141BE91D73E8D6E5 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 33AD4E17C9544A647DD26632 /* Assets.xcassets */; };
 		D9352D61C7DBDE699B59C875 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E507D65D93AF94CC7ED3910 /* APIClient.swift */; };
 		E1F476497CEBC9D681BFD091 /* MediaCrypto.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFA4BEB6F8E98A5399689CBD /* MediaCrypto.swift */; };
 		E215D78E45376DB782CA2EF0 /* LocalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 683EF6335AE45A56537595E9 /* LocalStore.swift */; };
@@ -61,6 +63,7 @@
 		0E26BA898827D154973154B3 /* SignerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignerTests.swift; sourceTree = "<group>"; };
 		15EDEF0EB644ABEDCE217DCE /* sm3.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = sm3.c; sourceTree = "<group>"; };
 		22DE90DE94385BE58C6ED5CD /* SwiftDataModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SwiftDataModels.swift; sourceTree = "<group>"; };
+		33AD4E17C9544A647DD26632 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		3A87C0808212A611133379B9 /* BridgingHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BridgingHeader.h; sourceTree = "<group>"; };
 		43E2B51D41E5465CAF8F1682 /* ContentRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentRepository.swift; sourceTree = "<group>"; };
 		45A4A209EF7C22F00283E686 /* VideoDiskCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoDiskCache.swift; sourceTree = "<group>"; };
@@ -73,6 +76,7 @@
 		7B61443B85B033D65B5808B5 /* signing.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = signing.json; sourceTree = "<group>"; };
 		7CF79F5F3E136267CFA707AD /* HongguoTVTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = HongguoTVTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		885B40B8342442E7DDA71885 /* AesV3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AesV3.swift; sourceTree = "<group>"; };
+		9099CCB9DE27057A7A73E462 /* icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = icon.png; sourceTree = "<group>"; };
 		9205B8369A1B273521F155EB /* RemoteVideo.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteVideo.swift; sourceTree = "<group>"; };
 		9986F8B909FB2FDAE0349FF0 /* AuthURLProtocol.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthURLProtocol.swift; sourceTree = "<group>"; };
 		A8DD09667D74ED5992A7A0CC /* endian.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = endian.h; sourceTree = "<group>"; };
@@ -88,7 +92,7 @@
 		D238AF3905F5297600B10E40 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		D3995B3B75444986CB0F6016 /* CENCResourceLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CENCResourceLoader.swift; sourceTree = "<group>"; };
 		D92AB9CE2D6C1647143E729D /* SearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SearchView.swift; sourceTree = "<group>"; };
-		E4BC9C973C1AA671D7737BE4 /* HongguoTV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HongguoTV.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E4BC9C973C1AA671D7737BE4 /* BinGo.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = BinGo.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		E62EAA191BADEA70104A52D5 /* SM3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SM3.swift; sourceTree = "<group>"; };
 		E63697701D9B00A619152232 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		EA9C0734CF1BA31225859EA5 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -176,7 +180,7 @@
 		FAD5C1023356503ED5CCB212 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				E4BC9C973C1AA671D7737BE4 /* HongguoTV.app */,
+				E4BC9C973C1AA671D7737BE4 /* BinGo.app */,
 				7CF79F5F3E136267CFA707AD /* HongguoTVTests.xctest */,
 			);
 			name = Products;
@@ -186,6 +190,7 @@
 			isa = PBXGroup;
 			children = (
 				4E507D65D93AF94CC7ED3910 /* APIClient.swift */,
+				33AD4E17C9544A647DD26632 /* Assets.xcassets */,
 				9986F8B909FB2FDAE0349FF0 /* AuthURLProtocol.swift */,
 				B222315974A78008C68A3B27 /* CacheStore.swift */,
 				D3995B3B75444986CB0F6016 /* CENCResourceLoader.swift */,
@@ -196,6 +201,7 @@
 				6CCAE24D856F8EFAAAD6D511 /* Diagnostics.swift */,
 				D238AF3905F5297600B10E40 /* HomeView.swift */,
 				6E1A9EFA59597CDBEDB60E34 /* HongguoTVApp.swift */,
+				9099CCB9DE27057A7A73E462 /* icon.png */,
 				C83E477A22874401B65E80E0 /* ImmersivePlayerView.swift */,
 				C142E890C3822E70C789A075 /* LibraryView.swift */,
 				683EF6335AE45A56537595E9 /* LocalStore.swift */,
@@ -239,6 +245,7 @@
 			buildConfigurationList = 87AB1174F4EC5272136CEF0B /* Build configuration list for PBXNativeTarget "HongguoTV" */;
 			buildPhases = (
 				98AB83B807E51EFA00AEFBA0 /* Sources */,
+				8553F08D94C8005DF84B30C9 /* Resources */,
 			);
 			buildRules = (
 			);
@@ -248,7 +255,7 @@
 			packageProductDependencies = (
 			);
 			productName = HongguoTV;
-			productReference = E4BC9C973C1AA671D7737BE4 /* HongguoTV.app */;
+			productReference = E4BC9C973C1AA671D7737BE4 /* BinGo.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -293,6 +300,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				2957FA6C831BA1DA7F4CBC40 /* signing.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8553F08D94C8005DF84B30C9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D606C386141BE91D73E8D6E5 /* Assets.xcassets in Resources */,
+				54246367524AE82CCE137D08 /* icon.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -373,12 +389,14 @@
 		6317A7EB359C7673CCE9D28F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = LH4AD7B7D6;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3J7CUW9L7R;
 				ENABLE_TESTABILITY = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = HongguoTV/Info.plist;
-				PRODUCT_BUNDLE_IDENTIFIER = com.hongguotv.tvos;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tanxq.bingotv.tvos;
+				PRODUCT_NAME = BinGo;
 				SWIFT_OBJC_BRIDGING_HEADER = HongguoTV/Crypto/BridgingHeader.h;
 				TVOS_DEPLOYMENT_TARGET = 26.0;
 			};
@@ -390,7 +408,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				ENABLE_TESTABILITY = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.hongguotv.tvos.tests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tanxq.bingotv.tvos.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HongguoTV.app/HongguoTV";
 				TVOS_DEPLOYMENT_TARGET = 26.0;
@@ -403,7 +421,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				ENABLE_TESTABILITY = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.hongguotv.tvos.tests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tanxq.bingotv.tvos.tests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HongguoTV.app/HongguoTV";
 				TVOS_DEPLOYMENT_TARGET = 26.0;
@@ -425,12 +443,14 @@
 		C6077B71BAD00BA992A9F02D /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				DEVELOPMENT_TEAM = LH4AD7B7D6;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 3J7CUW9L7R;
 				ENABLE_TESTABILITY = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = HongguoTV/Info.plist;
-				PRODUCT_BUNDLE_IDENTIFIER = com.hongguotv.tvos;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.tanxq.bingotv.tvos;
+				PRODUCT_NAME = BinGo;
 				SWIFT_OBJC_BRIDGING_HEADER = HongguoTV/Crypto/BridgingHeader.h;
 				TVOS_DEPLOYMENT_TARGET = 26.0;
 			};
