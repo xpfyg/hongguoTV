@@ -84,8 +84,7 @@ struct SearchView: View {
                             .font(AppFont.aux)
                             .foregroundStyle(AppColors.textTertiary)
                     }
-                    .buttonStyle(.plain)
-                    .focusLift(scale: 1.05, brighten: false)
+                    .buttonStyle(ScaleButtonStyle(scale: 1.05))
                 }
             }
             if history.isEmpty {
@@ -109,8 +108,7 @@ struct SearchView: View {
                                     .background(AppColors.surface)
                                     .clipShape(Capsule())
                             }
-                            .buttonStyle(.plain)
-                            .focusLift(scale: 1.05, brighten: false)
+                            .buttonStyle(ScaleButtonStyle(scale: 1.05))
                         }
                     }
                 }
@@ -145,8 +143,7 @@ struct SearchView: View {
                                     .background(AppColors.surface)
                                     .clipShape(Capsule())
                             }
-                            .buttonStyle(.plain)
-                            .focusLift(scale: 1.05, brighten: false)
+                            .buttonStyle(ScaleButtonStyle(scale: 1.05))
                         }
                     }
                 }

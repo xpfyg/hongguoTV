@@ -355,7 +355,7 @@ struct ImmersiveRootView: View {
                                 .clipShape(Circle())
                         }
                         .focused($focusedPanel, equals: .exit)
-                        .focusLift(scale: 1.1)
+                        .buttonStyle(ScaleButtonStyle(scale: 1.1))
                         Spacer()
                     }
                     Spacer()
@@ -472,9 +472,8 @@ struct ImmersiveRootView: View {
                                 .background(ep.id == model.currentEpisode.id ? AppColors.surfaceHigh : AppColors.surfaceHigh.opacity(0.4))
                                 .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
                         }
-                        .buttonStyle(.plain)
+                        .buttonStyle(ScaleButtonStyle(scale: 1.1))
                         .focused($focusedPanel, equals: .episode)
-                        .focusLift(scale: 1.1)
                     }
                 }
             }

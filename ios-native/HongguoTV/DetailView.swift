@@ -140,8 +140,7 @@ struct DetailView: View {
                                                             .frame(width: 88)
                                                         }
                                                     }
-                                                    .buttonStyle(.plain)
-                                                    .focusLift(scale: 1.05, brighten: false)
+                                                    .buttonStyle(ScaleButtonStyle(scale: 1.05))
                                                 }
                                             }
                                         }
@@ -455,9 +454,8 @@ struct ActorWorksView: View {
                         .font(.system(size: 22, weight: .semibold))
                         .foregroundStyle(AppColors.textPrimary)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(ScaleButtonStyle(scale: 1.05))
                 .focused($returnFocused)
-                .focusLift(scale: 1.05)
                 .padding(.top, 30)
 
                 // 演员信息

@@ -76,10 +76,11 @@ struct HomeView: View {
                 if !homeList.isEmpty {
                     Shelf(title: "热门短剧") {
                         ForEach(homeList.prefix(16)) { series in
-                            PosterCard(series: series) { onOpen(series) }
+                            PosterCard(series: series, width: 230) { onOpen(series) }
                         }
                     }
-                    .padding(.bottom, AppSpacing.shelf)
+                     .padding(.horizontal, AppSpacing.edge)
+                    .padding(.bottom, 60)
                 }
 
                 // 分类浏览（保留全部既有业务能力）
@@ -177,9 +178,8 @@ struct HomeView: View {
             .foregroundStyle(selected ? AppColors.background : AppColors.textPrimary)
             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(ScaleButtonStyle(scale: 1.04))
         .focused($focusedCategory, equals: cat.id)
-        .focusLift(scale: 1.04, brighten: false)
     }
 
     // MARK: - 小分类栏
@@ -212,9 +212,8 @@ struct HomeView: View {
                 .background(selected ? AppColors.textPrimary : AppColors.surface)
                 .clipShape(Capsule())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(ScaleButtonStyle(scale: 1.04))
         .focused($subFocus, equals: key)
-        .focusLift(scale: 1.04, brighten: false)
     }
 
     // MARK: - 分类网格
@@ -538,9 +537,8 @@ struct ResumeCard: View {
                     .frame(height: 3)
                     .allowsHitTesting(false)
                 }
-                .focusLift(scale: 1.05)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(ScaleButtonStyle(scale: 1.05))
     }
 }
 
@@ -590,35 +588,14 @@ private struct CardTitle: View {
     let width: CGFloat?
     @Environment(\.isFocused) private var isFocused
     @State private var offset: CGFloat = 0
-    @State private var timer: Timer?
 
     var body: some View {
         Text(text)
             .font(AppFont.cardTitle)
             .foregroundStyle(isFocused ? AppColors.textPrimary : AppColors.textTertiary)
-            .lineLimit(1)
             .frame(width: width, alignment: .center)
-            .offset(x: offset, y: isFocused ? 14 : 0)
+            .clipped()
+            .offset(y: isFocused ? 14 : 0)
             .animation(.easeOut(duration: 0.25), value: isFocused)
-            .onChange(of: isFocused) { focused in
-                if focused { startMarquee() } else { stopMarquee() }
-            }
-    }
-
-    private func startMarquee() {
-        stopMarquee()
-        // 简单 marquee：从 0 滚到 -30，再回 0，循环
-        timer = Timer.scheduledTimer(withTimeInterval: 0.04, repeats: true) { t in
-            offset -= 1.2
-            if offset < -120 {
-                offset = 30
-            }
-        }
-    }
-
-    private func stopMarquee() {
-        timer?.invalidate()
-        timer = nil
-        offset = 0
     }
 }

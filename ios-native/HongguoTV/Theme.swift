@@ -70,7 +70,7 @@ enum AppSpacing {
     /// 内容架之间的纵向间距
     static let shelf: CGFloat = 64
     /// 同排卡片间距
-    static let card: CGFloat = 36
+    static let card: CGFloat = 40
 }
 
 enum AppMotion {
@@ -80,47 +80,19 @@ enum AppMotion {
     static let page = Animation.easeOut(duration: 0.4)
 }
 
-// MARK: - 焦点修饰器：柔和放大 + 柔影（稳定不抖动，不做发光描边）
+// MARK: - 通用聚焦放大 ButtonStyle：无系统描边/玻璃
 
-private struct FocusLiftStateKey: PreferenceKey {
-    static var defaultValue = false
-
-    static func reduce(value: inout Bool, nextValue: () -> Bool) {
-        value = nextValue()
-    }
-}
-
-private struct FocusLiftProbe: View {
+struct ScaleButtonStyle: ButtonStyle {
+    var scale: CGFloat = 1.06
     @Environment(\.isFocused) private var isFocused
 
-    var body: some View {
-        Color.clear
-            .preference(key: FocusLiftStateKey.self, value: isFocused)
-    }
-}
-
-struct FocusLift: ViewModifier {
-    var scale: CGFloat = 1.06
-    @State private var isFocused = false
-
-    func body(content: Content) -> some View {
-        content
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
             .focusEffectDisabled()
-            .background(FocusLiftProbe())
             .scaleEffect(isFocused ? scale : 1.0)
-            .shadow(
-                color: .black.opacity(isFocused ? 0.6 : 0.28),
-                radius: isFocused ? 26 : 10,
-                y: isFocused ? 16 : 6
-            )
+            .shadow(color: .black.opacity(isFocused ? 0.6 : 0.28),
+                    radius: isFocused ? 24 : 8, y: isFocused ? 14 : 4)
             .animation(AppMotion.focus, value: isFocused)
-            .onPreferenceChange(FocusLiftStateKey.self) { isFocused = $0 }
-    }
-}
-
-extension View {
-    func focusLift(scale: CGFloat = 1.06, brighten: Bool = true) -> some View {
-        modifier(FocusLift(scale: scale))
     }
 }
 
