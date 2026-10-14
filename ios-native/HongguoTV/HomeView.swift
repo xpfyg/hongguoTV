@@ -578,7 +578,7 @@ struct PosterCard: View {
                     .lineLimit(1)
                     .frame(width: width, alignment: .leading)
             }
-            .focusLift(scale: 1.06)
+            .hoverEffect(.highlight)
         }
         .buttonStyle(.plain)
         .onAppear {
