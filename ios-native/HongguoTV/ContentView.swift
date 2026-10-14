@@ -30,7 +30,9 @@ struct ContentView: View {
                 .padding(.horizontal, AppSpacing.edge)
                 .padding(.top, 36)
                 .padding(.bottom, 8)
+                .focusSection()
             content
+                .focusSection()
         }
         .background(AppColors.background.ignoresSafeArea())
         .fullScreenCover(item: $detailSeries) { series in
